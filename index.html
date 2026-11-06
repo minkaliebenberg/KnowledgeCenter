@@ -8,7 +8,228 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+  <style>
+/* CrownRing Knowledge Center — prototype styles
+   Colour tokens live on :root so the developer can map them to the
+   existing internal website's theme in one place. */
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface-2: #f1ede4;
+  --text: #1d2230;
+  --muted: #5f6573;
+  --border: #e3ddd0;
+  --accent: #a87b2d;        /* gold */
+  --accent-strong: #8a6220;
+  --accent-soft: #f4ead5;
+  --navy: #1f2a44;
+  --ok: #2f7a4f;
+  --ok-soft: #e3f1e8;
+  --warn: #a1561a;
+  --warn-soft: #fbeadb;
+  --info: #2d5b9a;
+  --info-soft: #e3ecf8;
+  --danger: #a23b3b;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(20, 20, 30, .05), 0 4px 16px rgba(20, 20, 30, .05);
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --serif: 'Cormorant Garamond', Georgia, serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14161c; --surface: #1c1f27; --surface-2: #232733; --text: #ebe8e1; --muted: #a2a6b2;
+    --border: #2f3442; --accent: #d4a54f; --accent-strong: #e2b864; --accent-soft: #3a3020;
+    --navy: #d9dde8; --ok: #6cc28f; --ok-soft: #1e3427; --warn: #e8a066; --warn-soft: #3b2a1c;
+    --info: #86aee6; --info-soft: #1d2a3d; --danger: #e48a8a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14161c; --surface: #1c1f27; --surface-2: #232733; --text: #ebe8e1; --muted: #a2a6b2;
+  --border: #2f3442; --accent: #d4a54f; --accent-strong: #e2b864; --accent-soft: #3a3020;
+  --navy: #d9dde8; --ok: #6cc28f; --ok-soft: #1e3427; --warn: #e8a066; --warn-soft: #3b2a1c;
+  --info: #86aee6; --info-soft: #1d2a3d; --danger: #e48a8a; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent-strong); }
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .4em; }
+h1 { font-family: var(--serif); font-weight: 600; font-size: 2rem; letter-spacing: .01em; }
+h2 { font-size: 1.15rem; font-weight: 600; }
+h3 { font-size: 1rem; font-weight: 600; }
+p { margin: 0 0 .8em; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- demo bar & header ---------- */
+.demo-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 6px 16px;
+  background: var(--navy); color: var(--bg); font-size: 13px; }
+.demo-bar select { width: auto; background: var(--bg); color: var(--text); border: 0; border-radius: 6px; padding: 3px 6px; max-width: 100%; }
+.demo-bar .link-btn { color: var(--bg); }
+.link-btn { background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline; color: var(--accent-strong); }
+
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 10px 24px;
+  background: var(--surface); border-bottom: 1px solid var(--border); }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand-mark { color: var(--accent); display: grid; place-items: center; }
+.brand-text { display: flex; flex-direction: column; line-height: 1.05; }
+.brand-name { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; }
+.brand-sub { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.mainnav { display: flex; gap: 4px; margin-left: 12px; flex: 1; overflow-x: auto; }
+.mainnav a { padding: 8px 14px; border-radius: 999px; text-decoration: none; color: var(--muted); font-weight: 500; white-space: nowrap; }
+.mainnav a:hover { background: var(--surface-2); color: var(--text); }
+.mainnav a.active { background: var(--accent-soft); color: var(--accent-strong); }
+.mainnav .badge { margin-left: 6px; }
+
+main { max-width: 1120px; margin: 0 auto; padding: 28px 24px 80px; outline: none; }
+
+/* ---------- primitives ---------- */
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent;
+  background: var(--accent); color: #fff; font-weight: 500; cursor: pointer; text-decoration: none; }
+.btn:hover { background: var(--accent-strong); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-ghost:hover { background: var(--surface-2); }
+.btn-sm { padding: 5px 10px; font-size: 13px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--surface-2); color: var(--muted); vertical-align: middle; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.info { background: var(--info-soft); color: var(--info); }
+.badge.gold { background: var(--accent-soft); color: var(--accent-strong); }
+.pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 13px; color: var(--text); }
+.chip.active { background: var(--navy); color: var(--bg); border-color: var(--navy); }
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.spread { justify-content: space-between; }
+.stack > * + * { margin-top: 16px; }
+.page-head { margin-bottom: 24px; }
+.page-head p { color: var(--muted); max-width: 680px; }
+.note { border-left: 3px solid var(--accent); background: var(--accent-soft); padding: 10px 14px; border-radius: 6px; font-size: 14px; }
+.note.info { border-color: var(--info); background: var(--info-soft); }
+.empty { text-align: center; padding: 32px; color: var(--muted); }
+input[type=text], input[type=search], select, textarea { width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+textarea { min-height: 120px; resize: vertical; }
+label { font-weight: 500; font-size: 14px; display: block; margin-bottom: 4px; }
+.field + .field { margin-top: 14px; }
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; overflow-x: auto; }
+.tabs a { padding: 10px 14px; text-decoration: none; color: var(--muted); border-bottom: 2px solid transparent; white-space: nowrap; font-weight: 500; }
+.tabs a.active { color: var(--text); border-color: var(--accent); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+.table-wrap { overflow-x: auto; }
+
+/* ---------- progress ---------- */
+.progress { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s; }
+.hero { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+.hero .pct { font-family: var(--serif); font-size: 3rem; font-weight: 600; color: var(--accent-strong); line-height: 1; }
+.stage-track { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 18px; }
+.stage-pill { padding: 10px 12px; border-radius: 8px; background: var(--surface-2); font-size: 13px; }
+.stage-pill strong { display: block; font-size: 13px; }
+.stage-pill.done { background: var(--ok-soft); color: var(--ok); }
+.stage-pill.current { background: var(--accent-soft); color: var(--accent-strong); outline: 1px solid var(--accent); }
+.stage-pill.locked { opacity: .55; }
+
+.stage { margin-top: 32px; }
+.stage-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.stage-head .scope { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.module-card { display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text); transition: transform .12s, border-color .12s; }
+.module-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+.module-card.locked { pointer-events: none; opacity: .55; }
+.module-card .meta { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin-top: auto; }
+.update-card { border-left: 4px solid var(--warn); }
+
+/* ---------- reading ---------- */
+.doc-body h2 { margin-top: 1.4em; font-size: 1.1rem; }
+.doc-body ul { padding-left: 1.3em; margin: 0 0 .8em; }
+.doc-body li { margin-bottom: .3em; }
+.reader { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+.reader nav { position: sticky; top: 90px; }
+.reader nav ol { list-style: none; padding: 0; margin: 0; }
+.reader nav li a { display: block; padding: 8px 10px; border-radius: 6px; text-decoration: none; color: var(--muted); font-size: 14px; }
+.reader nav li a.active { background: var(--accent-soft); color: var(--accent-strong); font-weight: 500; }
+.reader nav li a.done::before { content: '✓ '; color: var(--ok); }
+.source-tag { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); background: var(--surface-2); border-radius: 6px; padding: 3px 8px; }
+.changes { background: var(--warn-soft); border-radius: var(--radius); padding: 16px 18px; }
+.changes h3 { color: var(--warn); }
+
+/* quiz */
+.quiz-q { padding: 16px 0; border-bottom: 1px solid var(--border); }
+.quiz-q:last-child { border-bottom: 0; }
+.opt { display: flex; gap: 10px; align-items: center; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; margin-top: 8px; cursor: pointer; font-weight: 400; }
+.opt:hover { background: var(--surface-2); }
+.opt.correct { border-color: var(--ok); background: var(--ok-soft); }
+.opt.wrong { border-color: var(--danger); }
+
+/* ---------- know ---------- */
+.search-big { position: relative; }
+.search-big input { padding: 14px 16px 14px 44px; font-size: 16px; border-radius: 12px; }
+.search-big::before { content: '⌕'; position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--muted); }
+.cat-card { text-decoration: none; color: var(--text); display: flex; gap: 12px; align-items: flex-start; cursor: pointer; text-align: left; width: 100%; }
+.cat-card:hover { border-color: var(--accent); }
+.cat-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; flex: none; font-size: 16px; }
+.doc-row { display: flex; justify-content: space-between; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--border); text-decoration: none; color: var(--text); }
+.doc-row:hover .doc-title { color: var(--accent-strong); }
+.doc-title { font-weight: 500; }
+mark { background: var(--accent-soft); color: inherit; padding: 0 2px; border-radius: 3px; }
+
+/* ---------- ask ---------- */
+.chat { display: flex; flex-direction: column; gap: 14px; min-height: 320px; }
+.msg { max-width: 80%; padding: 12px 16px; border-radius: 14px; }
+.msg.user { align-self: flex-end; background: var(--navy); color: var(--bg); border-bottom-right-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+.msg.bot .sources { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); font-size: 13px; }
+.chat-input { display: flex; gap: 8px; margin-top: 16px; }
+.chat-input input { flex: 1; }
+
+/* ---------- manage ---------- */
+.folder { display: flex; gap: 14px; align-items: center; }
+.folder .ico { font-size: 26px; }
+.folder .count { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; }
+.lock { font-size: 12px; color: var(--muted); }
+.radio-card { display: flex; gap: 10px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-weight: 400; }
+.radio-card:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+.section-editor { border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 10px; background: var(--surface-2); }
+.diff-del { background: #f8dcdc; color: #7a2323; text-decoration: line-through; }
+.diff-add { background: #d9f0e0; color: #1d5a35; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .diff-del { background: #4a2222; color: #f3b5b5; } :root:not([data-theme="light"]) .diff-add { background: #1d3d29; color: #a8e2bd; } }
+
+/* team matrix */
+.cell-pct { min-width: 90px; }
+.cell-pct .progress { height: 6px; margin-top: 4px; }
+
+/* ---------- modal & toast ---------- */
+.modal { position: fixed; inset: 0; background: rgba(10, 12, 20, .45); display: grid; place-items: center; padding: 16px; z-index: 50; }
+.modal[hidden] { display: none; }
+.modal-card { background: var(--surface); border-radius: 14px; padding: 24px; width: min(560px, 100%); max-height: 90vh; overflow: auto; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--navy); color: var(--bg); padding: 10px 18px; border-radius: 10px; opacity: 0; transition: all .25s; z-index: 60; max-width: calc(100% - 32px); }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- responsive ---------- */
+@media (max-width: 760px) {
+  .topbar { flex-wrap: wrap; padding: 10px 16px; gap: 8px; }
+  .mainnav { order: 3; flex-basis: 100%; margin-left: 0; }
+  .suggest-btn { margin-left: auto; }
+  .hide-sm { display: none; }
+  main { padding: 20px 16px 60px; }
+  .hero { grid-template-columns: 1fr; }
+  .stage-track { grid-template-columns: repeat(2, 1fr); }
+  .reader { grid-template-columns: 1fr; }
+  .reader nav { position: static; }
+  .msg { max-width: 92%; }
+  h1 { font-size: 1.6rem; }
+}
+
+</style>
 </head>
 <body>
   <div class="demo-bar" role="note">
@@ -37,8 +258,1389 @@
   </div>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/data.js"></script>
-  <script src="js/store.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+/* =============================================================================
+   CrownRing Knowledge Center — SEED DATA (prototype only)
+   -----------------------------------------------------------------------------
+   Everything in this file is SAMPLE content used to demonstrate the flows.
+   In production this would live in a database (see docs/DATA-MODEL.md).
+   Company facts, procedures and names below are placeholders, not real policy.
+   ========================================================================== */
+
+window.SEED = {
+  today: '2026-11-03',
+
+  departments: [
+    { id: 'CS', name: 'Customer Service' },
+    { id: 'OP', name: 'Order Processing' },
+    { id: 'AR', name: 'Accounting' },
+    { id: 'SH', name: 'Shipping & Receiving' },
+  ],
+
+  categories: [
+    { id: 'company',   name: 'Company & Culture',            icon: '◆' },
+    { id: 'product',   name: 'Product & Industry Knowledge', icon: '◇' },
+    { id: 'systems',   name: 'Systems & Tools',              icon: '▣' },
+    { id: 'policies',  name: 'Policies & Procedures',        icon: '☰' },
+    { id: 'quality',   name: 'Quality & Manufacturing',      icon: '✦' },
+    { id: 'reference', name: 'Reference & Troubleshooting',  icon: '?' },
+  ],
+
+  /* role: employee | supervisor | admin.  sme: subject-matter expert for a dept */
+  users: [
+    { id: 'u1', name: 'Priya Shah',   role: 'employee',   dept: 'CS', supervisor: 'u3', start: '2026-10-20', title: 'Customer Service Representative', deptHistory: [] },
+    { id: 'u4', name: 'Jordan Reyes', role: 'employee',   dept: 'CS', supervisor: 'u3', start: '2025-03-10', title: 'Customer Service Representative', deptHistory: [] },
+    { id: 'u2', name: 'Marcus Lee',   role: 'employee',   dept: 'OP', supervisor: 'u7', start: '2024-06-01', title: 'Order Processing Coordinator',    deptHistory: [{ dept: 'CS', from: '2024-06-01', to: '2026-09-01' }] },
+    { id: 'u6', name: 'Sam Novak',    role: 'employee',   dept: 'OP', supervisor: 'u7', start: '2021-02-15', title: 'Senior Order Coordinator', sme: 'OP', deptHistory: [] },
+    { id: 'u3', name: 'Dana Okafor',  role: 'supervisor', dept: 'CS', supervisor: null, start: '2022-01-10', title: 'Customer Service Supervisor', sme: 'CS', deptHistory: [] },
+    { id: 'u7', name: 'Rob Tran',     role: 'supervisor', dept: 'OP', supervisor: null, start: '2020-05-04', title: 'Order Processing Supervisor', deptHistory: [] },
+    { id: 'u5', name: 'Minka',        role: 'admin',      dept: 'CS', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
+  ],
+
+  /* ---------------------------------------------------------------------------
+     DOCUMENTS — the single source of truth. Learn modules and Ask both read
+     from here. depts: ['ALL'] or a list of department ids (display filter).
+     versions[]: newest last. Only status 'current' is shown to employees;
+     'archived' versions are kept for the record and never used by Ask.
+     type: initial | minor (silent) | major (pushed to learning queues)
+  --------------------------------------------------------------------------- */
+  documents: [
+    {
+      id: 'D1', title: 'Our Story, Mission & Values', category: 'company', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['history', 'culture', 'values', 'mission'],
+      versions: [{ v: '1.0', date: '2025-01-15', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Where we come from', body: 'SAMPLE CONTENT — replace with the real company history.\n\nCrownRing began as a small bench-jewellery workshop and grew into a full-service manufacturer producing fine jewellery for independent and national retailers across North America.' },
+          { h: 'Our mission', body: 'To craft fine jewellery our retail partners are proud to sell, delivered accurately and on time, backed by service that makes us easy to work with.' },
+          { h: 'Our values', body: '- **Craftsmanship** — every piece is inspected before it leaves the building.\n- **Accuracy** — small details (sizes, stamps, stones) matter to the end customer.\n- **Partnership** — retailers are long-term partners, not transactions.\n- **Ownership** — if you see a problem, raise it; if you own a task, close the loop.' },
+        ] }],
+    },
+    {
+      id: 'D2', title: 'Attendance, Hours & Time Off', category: 'policies', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['attendance', 'sick', 'vacation', 'hours', 'late', 'absence'],
+      versions: [{ v: '1.0', date: '2025-01-15', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Office hours', body: 'Administrative office hours are 8:30 a.m. to 4:30 p.m., Monday to Friday, with a 30-minute unpaid lunch.' },
+          { h: 'Reporting an absence or late arrival', body: 'If you will be absent or more than 10 minutes late, message your supervisor **before 8:30 a.m.** on the day. A message to a co-worker does not count as notice.' },
+          { h: 'Requesting vacation', body: '- Submit vacation requests in the HR portal at least **two weeks** in advance.\n- Requests during the November–December holiday peak need supervisor approval and may be limited.\n- Approval is not confirmed until you receive it in writing through the portal.' },
+        ] }],
+    },
+    {
+      id: 'D3', title: 'Communication Expectations', category: 'company', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['email', 'teams', 'response time', 'communication'],
+      versions: [{ v: '1.0', date: '2025-02-01', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Which channel to use', body: '- **Internal website tasks** — anything tied to an order, RMA or account.\n- **Teams chat** — quick internal questions.\n- **Email** — anything a retailer sees, or that needs a record.' },
+          { h: 'Response times', body: 'Reply to retailer emails within **one business day**, even if only to confirm you are looking into it. Internal Teams messages should be acknowledged the same day.' },
+          { h: 'Professional tone', body: 'Write to retailers as a partner: clear, polite and specific. Always include the order or RMA number in the subject line.' },
+        ] }],
+    },
+    {
+      id: 'D4', title: 'Jewellery Terminology Glossary', category: 'reference', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['glossary', 'terms', 'vocabulary', 'definitions'],
+      versions: [{ v: '1.0', date: '2025-02-10', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Common terms', body: '- **Shank** — the band of a ring that goes around the finger.\n- **Head** — the part of a ring that holds the centre stone.\n- **Prong** — a small metal claw that holds a stone in place.\n- **Bezel** — a metal rim that surrounds a stone completely.\n- **Pavé** — many small stones set close together so the surface appears paved.\n- **Finding** — a component such as a clasp, jump ring or earring post.\n- **Stamp / hallmark** — markings showing metal quality (e.g. 14K) and maker.' },
+          { h: 'Order and production terms', body: '- **SKU / style number** — the unique identifier for a design.\n- **Memo** — goods sent to a retailer on consignment, not sold.\n- **RMA** — Return Merchandise Authorization, required before any return.\n- **Casting** — pouring molten metal into a mould to form a piece.' },
+        ] }],
+    },
+    {
+      id: 'D5', title: 'Precious Metals & Karat Guide', category: 'product', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['gold', 'karat', 'platinum', 'silver', 'metal', '10k', '14k', '18k'],
+      versions: [{ v: '1.0', date: '2025-02-10', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Gold karats', body: 'Karat describes how much of the metal is pure gold, out of 24 parts.\n\n- **10K** — 41.7% gold\n- **14K** — 58.3% gold\n- **18K** — 75.0% gold\n\nHigher karat means richer colour and higher value, but a softer metal.' },
+          { h: 'Gold colours', body: 'Yellow, white and rose gold differ by the alloy mixed with the gold. White gold is usually rhodium-plated for a bright white finish, and may need re-plating over time.' },
+          { h: 'Platinum and silver', body: '- **Platinum (950)** — dense, naturally white, hypoallergenic; heavier and more expensive.\n- **Sterling silver (925)** — 92.5% silver; affordable, but tarnishes.' },
+        ] }],
+    },
+    {
+      id: 'D6', title: 'Ring Construction & Setting Styles', category: 'product', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['ring', 'setting', 'prong', 'bezel', 'channel', 'pave', 'construction', 'size'],
+      versions: [{ v: '1.0', date: '2025-03-01', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Parts of a ring', body: 'A ring is made of the **shank** (band), the **head** (holds the centre stone) and often **side stones** set into the shank.' },
+          { h: 'Setting styles', body: '- **Prong** — claws hold the stone; maximises light.\n- **Bezel** — metal rim; very secure, modern look.\n- **Channel** — stones set between two walls of metal.\n- **Pavé** — tiny stones set closely across the surface.' },
+          { h: 'Ring sizing', body: 'Standard production sizes run from 3 to 13 in quarter sizes. Pieces with stones set all the way around (eternity bands) **cannot be resized** and must be made to size.' },
+        ] }],
+    },
+    {
+      id: 'D7', title: 'Business Model & Retailer Relationships', category: 'product', depts: ['ALL'],
+      owner: 'u5', status: 'published', tags: ['retailer', 'business model', 'memo', 'wholesale', 'accounts'],
+      versions: [{ v: '1.0', date: '2025-03-01', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'How we make money', body: 'We sell **wholesale** to retailers, who sell to the public. We do not sell directly to consumers. If a consumer contacts us, refer them politely to their retailer.' },
+          { h: 'Types of retail accounts', body: '- **Independent retailers** — single or small groups of stores; often custom and special orders.\n- **Key accounts** — national chains with their own ordering rules and portals.' },
+          { h: 'Memo vs. purchase', body: 'Goods on **memo** remain our property until the retailer sells or returns them. Memo items must be tracked carefully and are never invoiced until sold.' },
+        ] }],
+    },
+    {
+      id: 'D8', title: 'Order Entry Procedure', category: 'policies', depts: ['CS', 'OP'],
+      owner: 'u6', status: 'published', tags: ['order', 'entry', 'po', 'purchase order', 'new order', 'special order'],
+      versions: [
+        { v: '1.0', date: '2025-04-01', type: 'initial', by: 'u6', status: 'archived', summary: 'Initial release.',
+          sections: [
+            { h: 'Before you start', body: 'Confirm the retailer account is active.' },
+            { h: 'Entering the order', body: 'Enter style number, metal, size and quantity. Save the order.' },
+          ] },
+        { v: '1.1', date: '2025-09-12', type: 'minor', by: 'u5', status: 'archived', summary: 'Formatting and typo corrections.',
+          sections: [
+            { h: 'Before you start', body: 'Confirm the retailer account is active and not on credit hold.' },
+            { h: 'Entering the order', body: 'Enter the style number, metal, size and quantity. Save the order.' },
+          ] },
+        { v: '2.0', date: '2026-08-15', type: 'major', by: 'u6', status: 'current', pushed: true,
+          summary: 'The retailer PO number is now a REQUIRED field, and special orders must have the "Special" flag set before saving. Orders without a PO number will be held by Accounting.',
+          sections: [
+            { h: 'Before you start', body: 'Confirm the retailer account is active and **not on credit hold**. If it is on hold, do not enter the order — forward the request to Accounting.' },
+            { h: 'Entering the order', body: '- Enter the **retailer PO number** (required — orders without one are held).\n- Enter style number, metal, ring size and quantity.\n- If anything is non-standard (custom size, stone upgrade, engraving), tick **Special order**.\n- Save, then email the order confirmation to the retailer.' },
+            { h: 'Common mistakes', body: '- Entering the size in the notes field instead of the size field.\n- Forgetting the Special flag — the order then goes to stock picking instead of production.' },
+          ] },
+      ],
+    },
+    {
+      id: 'D9', title: 'Returns & Repairs (RMA) Procedure', category: 'policies', depts: ['CS', 'OP', 'SH'],
+      owner: 'u3', status: 'published', tags: ['return', 'rma', 'repair', 'warranty', 'damaged', 'refund'],
+      versions: [
+        { v: '2.0', date: '2025-06-01', type: 'major', by: 'u3', status: 'archived', pushed: true, summary: 'RMA numbers now generated in the internal website.',
+          sections: [
+            { h: 'Issuing an RMA', body: 'Create the RMA in the internal website and email the RMA number to the retailer.' },
+            { h: 'Receiving the return', body: 'Shipping logs the package against the RMA number.' },
+          ] },
+        { v: '3.0', date: '2026-10-28', type: 'major', by: 'u3', status: 'current', pushed: true,
+          summary: 'Retailers must now send photos of the item before an RMA is approved, and RMAs expire after 30 days. Shipping must photograph every return on arrival.',
+          sections: [
+            { h: 'Issuing an RMA', body: '- Ask the retailer for **photos of the item** and a description of the issue.\n- Create the RMA in the internal website and attach the photos.\n- Email the RMA number to the retailer. **RMAs expire after 30 days.**\n- No item may be returned without an RMA number on the outside of the package.' },
+            { h: 'Receiving the return', body: 'Shipping & Receiving logs the package against the RMA number and **photographs the item on arrival** before it goes to Quality for assessment.' },
+            { h: 'Repairs vs. credits', body: 'Quality decides whether an item is repaired, replaced or credited. Customer Service communicates the decision to the retailer within **two business days** of the assessment.' },
+          ] },
+      ],
+    },
+    {
+      id: 'D10', title: 'Customer Service Call Handling Standards', category: 'policies', depts: ['CS'],
+      owner: 'u3', status: 'published', tags: ['phone', 'call', 'greeting', 'escalation', 'customer'],
+      versions: [{ v: '1.0', date: '2025-05-01', type: 'initial', by: 'u3', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Greeting', body: 'Answer within three rings: "Thank you for calling CrownRing, this is [name], how can I help you?"' },
+          { h: 'Verifying the caller', body: 'Confirm the **retailer account number** and the caller\'s name before discussing any order or pricing.' },
+          { h: 'Escalations', body: 'If a retailer asks for a manager, or the issue involves a credit over $500, transfer to the Customer Service Supervisor. Log the escalation on the account.' },
+        ] }],
+    },
+    {
+      id: 'D11', title: 'Rush Order Policy', category: 'policies', depts: ['CS', 'OP', 'SH'],
+      owner: 'u6', status: 'published', tags: ['rush', 'urgent', 'expedite', 'fast', 'deadline', 'turnaround'],
+      versions: [
+        { v: '1.0', date: '2025-07-01', type: 'initial', by: 'u6', status: 'archived', summary: 'Initial release.',
+          sections: [
+            { h: 'What counts as a rush', body: 'Any order needed in under 5 business days.' },
+            { h: 'Approval', body: 'Rush orders need Order Processing Supervisor approval.' },
+          ] },
+        { v: '1.1', date: '2026-10-05', type: 'minor', by: 'u5', status: 'current', pushed: false, summary: 'Clarified wording; no change to the process.',
+          sections: [
+            { h: 'What counts as a rush', body: 'Any order the retailer needs shipped in **fewer than 5 business days** (standard production is 10 business days).' },
+            { h: 'Approval', body: 'Rush orders require approval from the **Order Processing Supervisor** before you confirm a date with the retailer. A rush fee may apply.' },
+            { h: 'Shipping a rush', body: 'Rush orders ship by overnight courier and are marked with a red RUSH label.' },
+          ] },
+      ],
+    },
+    {
+      id: 'D12', title: 'Quality Inspection Checkpoints', category: 'quality', depts: ['OP', 'SH'],
+      owner: 'u6', status: 'published', tags: ['quality', 'inspection', 'qc', 'check', 'stamp', 'defect'],
+      versions: [
+        { v: '1.0', date: '2025-05-15', type: 'initial', by: 'u6', status: 'archived', summary: 'Initial release.',
+          sections: [{ h: 'Final inspection', body: 'Check size, stamp and stones before packing.' }] },
+        { v: '2.0', date: '2026-10-30', type: 'major', by: 'u6', status: 'current', pushed: true,
+          summary: 'A second sign-off is now required for any piece with a centre stone over 1 ct, and the inspection checklist is now completed in the internal website instead of on paper.',
+          sections: [
+            { h: 'Final inspection checklist', body: '- Size matches the order.\n- Metal stamp (e.g. 14K) and maker\'s mark are present and legible.\n- All stones present, secure and free of chips.\n- Finish is clean, with no tool marks.\n\nComplete the checklist **in the internal website** (paper checklists are retired).' },
+            { h: 'High-value pieces', body: 'Any piece with a **centre stone over 1 ct** requires a second inspector\'s sign-off before packing.' },
+          ] },
+      ],
+    },
+    {
+      id: 'D13', title: 'Insured Parcel Packing & Shipping', category: 'policies', depts: ['SH'],
+      owner: 'u5', status: 'published', tags: ['shipping', 'packing', 'courier', 'insurance', 'parcel'],
+      versions: [{ v: '1.0', date: '2025-05-20', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Packing', body: 'Pack each order in a plain, unbranded box. Never write "jewellery" or the company name on the outside of the parcel.' },
+          { h: 'Insurance', body: 'Every parcel is insured for its full wholesale value and requires a signature on delivery.' },
+        ] }],
+    },
+    {
+      id: 'D14', title: 'Invoicing & Credit Notes', category: 'policies', depts: ['AR'],
+      owner: 'u5', status: 'published', tags: ['invoice', 'credit', 'credit note', 'billing', 'payment'],
+      versions: [{ v: '1.0', date: '2025-06-10', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'When to invoice', body: 'Invoices are generated automatically when an order ships. Memo goods are invoiced only when the retailer reports them as sold.' },
+          { h: 'Issuing a credit note', body: 'Credit notes require an approved RMA decision from Quality. Credits over $500 also require the Accounting Supervisor\'s approval.' },
+        ] }],
+    },
+    {
+      id: 'D15', title: 'Internal Website: Order Lookup Quick Reference', category: 'systems', depts: ['CS', 'OP', 'AR', 'SH'],
+      owner: 'u5', status: 'published', tags: ['system', 'website', 'lookup', 'search', 'order status', 'tool'],
+      versions: [{ v: '1.0', date: '2025-04-01', type: 'initial', by: 'u5', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Finding an order', body: 'Use the search bar at the top of the Orders page. You can search by order number, retailer PO number or retailer account number.' },
+          { h: 'Order statuses', body: '- **Entered** — saved, not yet released.\n- **Pending production** — waiting for the shop floor.\n- **In production** — being made.\n- **QC** — in final inspection.\n- **Shipped** — tracking number available on the order.' },
+        ] }],
+    },
+    {
+      id: 'D16', title: 'Troubleshooting: Order Stuck in "Pending Production"', category: 'reference', depts: ['CS', 'OP'],
+      owner: 'u6', status: 'published', tags: ['stuck', 'pending', 'delay', 'troubleshooting', 'late order'],
+      versions: [{ v: '1.0', date: '2025-08-01', type: 'initial', by: 'u6', status: 'current', summary: 'Initial release.',
+        sections: [
+          { h: 'Check these first', body: '- Is the **Special order** flag set? Special orders wait for a production review.\n- Is the account on **credit hold**? Held accounts are not released.\n- Is a **PO number** missing? Orders without one are held by Accounting.' },
+          { h: 'Still stuck?', body: 'If none of the above apply and the order has been pending for more than 3 business days, message the Order Processing Supervisor with the order number.' },
+        ] }],
+    },
+    {
+      id: 'D17', title: 'New Collection Launch: Aurora Bridal', category: 'product', depts: ['ALL'],
+      owner: 'u6', status: 'in_review', tags: ['aurora', 'bridal', 'collection', 'launch', 'new product'],
+      versions: [{ v: '0.1', date: '2026-10-31', type: 'draft', by: 'u6', status: 'draft', summary: 'Draft submitted by SME for L&D review.',
+        sections: [
+          { h: 'About the collection', body: 'SAMPLE — Aurora Bridal is a new line of engagement rings and matching bands available in 14K and 18K, white, yellow and rose gold.' },
+          { h: 'What to tell retailers', body: 'Launch kits ship to key accounts first. Independent retailers can pre-order from the start of next month.' },
+        ] }],
+    },
+  ],
+
+  /* ---------------------------------------------------------------------------
+     LEARNING MODULES. Lessons are references to documents — content is pulled
+     live from the Know library, so L&D never writes it twice.
+     stage: foundation | products | path | ongoing
+     depts: ['ALL'] or list (a shared departmental module counts for every
+     listed dept, so switching departments never repeats it).
+  --------------------------------------------------------------------------- */
+  modules: [
+    { id: 'M1', stage: 'foundation', depts: ['ALL'], title: 'Welcome to CrownRing', minutes: 10, docs: ['D1'],
+      intro: 'Start here. Learn where we come from and what we value.',
+      quiz: [
+        { q: 'Who are our direct customers?', options: ['Members of the public', 'Retailers', 'Other manufacturers'], a: 1, docRef: 'D7' },
+        { q: 'Which value means "if you own a task, close the loop"?', options: ['Craftsmanship', 'Partnership', 'Ownership'], a: 2, docRef: 'D1' },
+      ] },
+    { id: 'M2', stage: 'foundation', depts: ['ALL'], title: 'Workplace Policies & Communication', minutes: 15, docs: ['D2', 'D3'],
+      intro: 'The day-to-day expectations that apply to everyone.',
+      quiz: [
+        { q: 'You will be 20 minutes late. When must you tell your supervisor?', options: ['When you arrive', 'Before 8:30 a.m.', 'By end of day'], a: 1, docRef: 'D2' },
+        { q: 'How quickly should you reply to a retailer email?', options: ['Within one business day', 'Within one week', 'Only when resolved'], a: 0, docRef: 'D3' },
+      ] },
+    { id: 'M3', stage: 'products', depts: ['ALL'], title: 'Our Business & Retailers', minutes: 10, docs: ['D7'],
+      intro: 'How our business works and who we serve.',
+      quiz: [
+        { q: 'When is a memo item invoiced?', options: ['When it ships', 'When the retailer reports it sold', 'At month end'], a: 1, docRef: 'D7' },
+      ] },
+    { id: 'M4', stage: 'products', depts: ['ALL'], title: 'Jewellery Fundamentals', minutes: 25, docs: ['D5', 'D6', 'D4'],
+      intro: 'Metals, ring construction and the vocabulary you will hear every day.',
+      quiz: [
+        { q: 'What percentage of 14K gold is pure gold?', options: ['41.7%', '58.3%', '75.0%'], a: 1, docRef: 'D5' },
+        { q: 'Which setting surrounds the stone with a metal rim?', options: ['Prong', 'Bezel', 'Pavé'], a: 1, docRef: 'D6' },
+        { q: 'Can an eternity band be resized?', options: ['Yes, up to 2 sizes', 'No, it must be made to size', 'Only in platinum'], a: 1, docRef: 'D6' },
+      ] },
+
+    /* Shared departmental module — appears in every listed department's path */
+    { id: 'M5', stage: 'path', depts: ['CS', 'OP', 'AR', 'SH'], title: 'Internal Website Basics', minutes: 10, docs: ['D15'],
+      intro: 'Find any order and understand what its status means.',
+      quiz: [
+        { q: 'Which status means an order is in final inspection?', options: ['Entered', 'QC', 'Pending production'], a: 1, docRef: 'D15' },
+      ] },
+
+    /* Customer Service path */
+    { id: 'M6', stage: 'path', depts: ['CS'], title: 'Order Entry for Customer Service', minutes: 20, docs: ['D8'],
+      intro: 'Enter orders correctly the first time.',
+      quiz: [
+        { q: 'Which field is required on every order?', options: ['Engraving', 'Retailer PO number', 'Courier'], a: 1, docRef: 'D8' },
+        { q: 'A retailer wants a custom size. What must you tick?', options: ['Rush', 'Special order', 'Memo'], a: 1, docRef: 'D8' },
+      ] },
+    { id: 'M7', stage: 'path', depts: ['CS'], title: 'Call Handling Standards', minutes: 10, docs: ['D10'],
+      intro: 'How we answer, verify and escalate.',
+      quiz: [
+        { q: 'What must you confirm before discussing an order?', options: ['The retailer account number and caller name', 'The retailer\'s address', 'Nothing'], a: 0, docRef: 'D10' },
+      ] },
+    { id: 'M8', stage: 'path', depts: ['CS'], title: 'Returns, Repairs & Rush Orders', minutes: 20, docs: ['D9', 'D11'],
+      intro: 'Handle the requests that need the most care.',
+      quiz: [
+        { q: 'How long is an RMA valid?', options: ['7 days', '30 days', '90 days'], a: 1, docRef: 'D9' },
+        { q: 'Who approves a rush order?', options: ['Any CS rep', 'Order Processing Supervisor', 'Shipping'], a: 1, docRef: 'D11' },
+      ] },
+
+    /* Order Processing path */
+    { id: 'M9', stage: 'path', depts: ['OP'], title: 'Order Entry & Release', minutes: 20, docs: ['D8', 'D16'],
+      intro: 'Enter, check and release orders to production.',
+      quiz: [
+        { q: 'An order is stuck in Pending Production. What do you check first?', options: ['Special flag, credit hold, PO number', 'The courier', 'The retailer\'s website'], a: 0, docRef: 'D16' },
+      ] },
+    { id: 'M10', stage: 'path', depts: ['OP'], title: 'Rush Orders & Quality Checkpoints', minutes: 20, docs: ['D11', 'D12'],
+      intro: 'Protect delivery dates and quality.',
+      quiz: [
+        { q: 'Which pieces need a second inspector sign-off?', options: ['All rings', 'Centre stone over 1 ct', 'Anything in 18K'], a: 1, docRef: 'D12' },
+      ] },
+
+    /* Accounting path */
+    { id: 'M11', stage: 'path', depts: ['AR'], title: 'Invoicing & Credits', minutes: 15, docs: ['D14', 'D7'],
+      intro: 'When we bill, and when we credit.',
+      quiz: [
+        { q: 'What is needed before issuing a credit note?', options: ['A phone call', 'An approved RMA decision from Quality', 'Nothing'], a: 1, docRef: 'D14' },
+      ] },
+
+    /* Shipping path */
+    { id: 'M12', stage: 'path', depts: ['SH'], title: 'Packing, Shipping & Receiving Returns', minutes: 20, docs: ['D13', 'D9', 'D12'],
+      intro: 'Get every parcel out safely and log every return.',
+      quiz: [
+        { q: 'What must NOT appear on the outside of a parcel?', options: ['The RMA number', 'The word "jewellery" or our company name', 'The address'], a: 1, docRef: 'D13' },
+      ] },
+
+    /* Ongoing — advanced / refresher learning */
+    { id: 'M13', stage: 'ongoing', depts: ['CS'], title: 'Advanced: Handling Difficult Escalations', minutes: 15, docs: ['D10', 'D9'], added: '2026-09-15',
+      intro: 'Refresher and advanced practice for experienced reps.',
+      quiz: [
+        { q: 'A credit over $500 is requested. Who takes the call?', options: ['You', 'Customer Service Supervisor', 'Shipping'], a: 1, docRef: 'D10' },
+      ] },
+    { id: 'M14', stage: 'ongoing', depts: ['ALL'], title: 'Annual Refresher: Communication Standards', minutes: 5, docs: ['D3'], added: '2026-10-01',
+      intro: 'A quick yearly check-in on how we communicate.',
+      quiz: [
+        { q: 'What goes in the subject line of every retailer email?', options: ['Your name', 'The order or RMA number', 'Nothing in particular'], a: 1, docRef: 'D3' },
+      ] },
+  ],
+
+  /* ---------------------------------------------------------------------------
+     COMPLETION RECORDS. kind: module | update.  For updates, ref = docId@version.
+     These are never deleted — archived document versions keep their records.
+  --------------------------------------------------------------------------- */
+  completions: [
+    // Priya — new hire, part way through foundation/products
+    { user: 'u1', kind: 'module', ref: 'M1', date: '2026-10-21', score: 100 },
+    { user: 'u1', kind: 'module', ref: 'M2', date: '2026-10-22', score: 100 },
+    { user: 'u1', kind: 'module', ref: 'M3', date: '2026-10-27', score: 100 },
+
+    // Jordan — experienced CS rep, has one update waiting
+    ...['M1','M2','M3','M4','M5','M6','M7','M8'].map((m, i) => ({ user: 'u4', kind: 'module', ref: m, date: '2025-03-' + String(12 + i).padStart(2, '0'), score: 100 })),
+    { user: 'u4', kind: 'update', ref: 'D8@2.0', date: '2026-08-18' },
+    { user: 'u4', kind: 'module', ref: 'M14', date: '2026-10-03', score: 100 },
+
+    // Marcus — moved CS -> OP; keeps company-wide + shared module credit
+    ...['M1','M2','M3','M4','M5','M6','M7','M8'].map((m, i) => ({ user: 'u2', kind: 'module', ref: m, date: '2024-06-' + String(3 + i).padStart(2, '0'), score: 100 })),
+    { user: 'u2', kind: 'update', ref: 'D8@2.0', date: '2026-08-16' },
+    { user: 'u2', kind: 'update', ref: 'D9@2.0', date: '2025-06-03' },
+
+    // Sam — OP SME, fully trained, two updates waiting
+    ...['M1','M2','M3','M4','M5','M9','M10'].map((m, i) => ({ user: 'u6', kind: 'module', ref: m, date: '2025-01-' + String(10 + i).padStart(2, '0'), score: 100 })),
+    { user: 'u6', kind: 'update', ref: 'D8@2.0', date: '2026-08-15' },
+    { user: 'u6', kind: 'update', ref: 'D9@2.0', date: '2025-06-02' },
+    { user: 'u6', kind: 'module', ref: 'M14', date: '2026-10-02', score: 100 },
+
+    // Dana — CS supervisor, all done
+    ...['M1','M2','M3','M4','M5','M6','M7','M8','M13','M14'].map((m, i) => ({ user: 'u3', kind: 'module', ref: m, date: '2025-01-' + String(10 + i).padStart(2, '0'), score: 100 })),
+    { user: 'u3', kind: 'update', ref: 'D8@2.0', date: '2026-08-15' },
+    { user: 'u3', kind: 'update', ref: 'D9@2.0', date: '2025-06-01' },
+    { user: 'u3', kind: 'update', ref: 'D9@3.0', date: '2026-10-28' },
+
+    // Rob — OP supervisor
+    ...['M1','M2','M3','M4','M5','M9','M10','M14'].map((m, i) => ({ user: 'u7', kind: 'module', ref: m, date: '2024-01-' + String(10 + i).padStart(2, '0'), score: 100 })),
+    { user: 'u7', kind: 'update', ref: 'D8@2.0', date: '2026-08-15' },
+    { user: 'u7', kind: 'update', ref: 'D9@2.0', date: '2025-06-04' },
+    { user: 'u7', kind: 'update', ref: 'D12@2.0', date: '2026-10-30' },
+    { user: 'u7', kind: 'update', ref: 'D9@3.0', date: '2026-10-29' },
+  ],
+
+  /* Suggestions / questions / content submissions from any employee */
+  submissions: [
+    { id: 'S1', user: 'u1', type: 'question', date: '2026-10-29', status: 'new',
+      text: 'Is there a guide for what to do when a retailer sends a return without an RMA number?' },
+    { id: 'S2', user: 'u6', type: 'content', date: '2026-10-31', status: 'in_progress', docId: 'D17',
+      text: 'Submitted draft content for the Aurora Bridal launch. Technical details confirmed with production.' },
+    { id: 'S3', user: 'u4', type: 'topic', date: '2026-10-15', status: 'planned',
+      text: 'Would love a module on gemstone basics — retailers ask about stone treatments a lot.' },
+  ],
+};
+
+</script>
+  <script>
+/* =============================================================================
+   Store + business rules.
+   In production these rules belong on the server (see docs/DATA-MODEL.md).
+   The prototype keeps state in memory and mirrors it to localStorage so a demo
+   survives a page refresh. "Reset demo" restores the seed data.
+   ========================================================================== */
+(function () {
+  const KEY = 'crownring-kc-demo-v1';
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+
+  let state;
+  try { state = JSON.parse(localStorage.getItem(KEY)); } catch (e) { state = null; }
+  if (!state || !state.documents) state = Object.assign(clone(window.SEED), { currentUser: 'u1' });
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* storage unavailable: demo still works in memory */ } }
+  function reset() { state = Object.assign(clone(window.SEED), { currentUser: state.currentUser || 'u1' }); save(); }
+
+  const STAGES = [
+    { id: 'foundation', label: 'Company Foundation',           scope: 'All employees', blurb: 'History, culture, organization, workplace policies and communication.' },
+    { id: 'products',   label: 'Products & Industry',          scope: 'All employees', blurb: 'Business model, retailer relationships and jewellery fundamentals.' },
+    { id: 'path',       label: 'Department Learning Path',     scope: 'Your department', blurb: 'The processes, systems and policies your department relies on.' },
+    { id: 'ongoing',    label: 'Ongoing Learning',             scope: 'Your department', blurb: 'Updates, launches, refreshers and advanced learning. This never "finishes".' },
+  ];
+
+  /* ---------- lookups ---------- */
+  const S = {
+    get state() { return state; },
+    save, reset, STAGES,
+    user: (id) => state.users.find((u) => u.id === id),
+    me: () => state.users.find((u) => u.id === state.currentUser),
+    setMe: (id) => { state.currentUser = id; save(); },
+    dept: (id) => (state.departments.find((d) => d.id === id) || { name: id }).name,
+    cat: (id) => state.categories.find((c) => c.id === id),
+    doc: (id) => state.documents.find((d) => d.id === id),
+    mod: (id) => state.modules.find((m) => m.id === id),
+    current: (doc) => doc.versions.find((v) => v.status === 'current'),
+    deptNames: (list) => (list.includes('ALL') ? 'All departments' : list.map((d) => S.dept(d)).join(', ')),
+    isAdmin: (u) => u.role === 'admin',
+    canSeeTeam: (u) => u.role === 'admin' || u.role === 'supervisor',
+  };
+
+  const appliesTo = (depts, u) => depts.includes('ALL') || depts.includes(u.dept);
+
+  /* ---------- KNOW: what a user can see ---------- */
+  S.visibleDocs = (u) => state.documents.filter((d) =>
+    d.status === 'published' && (S.isAdmin(u) || appliesTo(d.depts, u)));
+
+  /* ---------- LEARN: what a user must complete ---------- */
+  S.done = (userId, kind, ref) => state.completions.find((c) => c.user === userId && c.kind === kind && c.ref === ref);
+
+  S.requiredModules = (u) => state.modules.filter((m) => appliesTo(m.depts, u));
+
+  /* An update (a published version flagged "push to learning queue") is required when:
+     1. the document applies to the user's department, and
+     2. the user started before the update was published, and
+     3. the user does NOT have an unfinished module that already teaches this
+        document (they will learn the current version there instead).
+     Superseded updates drop off the queue; their completion records are kept. */
+  S.requiredUpdates = (u) => {
+    const mods = S.requiredModules(u);
+    const out = [];
+    state.documents.forEach((d) => {
+      if (d.status !== 'published' || !appliesTo(d.depts, u)) return;
+      const v = S.current(d);
+      if (!v || !v.pushed) return;
+      if (u.start >= v.date) return;
+      const pendingModuleTeachesIt = mods.some((m) => m.docs.includes(d.id) && !S.done(u.id, 'module', m.id));
+      if (pendingModuleTeachesIt) return;
+      out.push({ doc: d, version: v, ref: d.id + '@' + v.v });
+    });
+    return out;
+  };
+
+  S.stageStatus = (u) => {
+    const mods = S.requiredModules(u);
+    const ups = S.requiredUpdates(u);
+    return STAGES.map((st, i) => {
+      const items = mods.filter((m) => m.stage === st.id);
+      let total = items.length, done = items.filter((m) => S.done(u.id, 'module', m.id)).length;
+      if (st.id === 'ongoing') { total += ups.length; done += ups.filter((x) => S.done(u.id, 'update', x.ref)).length; }
+      return Object.assign({}, st, { index: i, items, total, done, complete: total > 0 && done === total });
+    }).map((st, i, arr) => {
+      // Stages unlock in order. (Pushed document updates are never locked — see outstanding().)
+      st.unlocked = i === 0 || arr.slice(0, i).every((p) => p.complete || p.total === 0);
+      return st;
+    });
+  };
+
+  S.progress = (u) => {
+    const st = S.stageStatus(u);
+    const total = st.reduce((a, s) => a + s.total, 0);
+    const done = st.reduce((a, s) => a + s.done, 0);
+    return { total, done, pct: total ? Math.round((done / total) * 100) : 100, stages: st };
+  };
+
+  S.outstanding = (u) => {
+    const out = [];
+    S.stageStatus(u).forEach((st) => {
+      if (!st.unlocked) return;
+      st.items.forEach((m) => { if (!S.done(u.id, 'module', m.id)) out.push({ kind: 'module', m, stage: st }); });
+    });
+    S.requiredUpdates(u).forEach((x) => { if (!S.done(u.id, 'update', x.ref)) out.push({ kind: 'update', x }); });
+    return out;
+  };
+
+  S.complete = (userId, kind, ref, score) => {
+    if (S.done(userId, kind, ref)) return;
+    state.completions.push({ user: userId, kind, ref, date: state.today, score });
+    save();
+  };
+
+  /* Credit kept from a previous department (shown on the transcript) */
+  S.transcript = (u) => state.completions.filter((c) => c.user === u.id).sort((a, b) => (a.date < b.date ? 1 : -1));
+
+  /* ---------- MANAGE: versioning & publishing ---------- */
+  S.nextVersion = (cur, type) => {
+    const [maj, min] = cur.split('.').map(Number);
+    if (cur.startsWith('0.')) return '1.0';
+    return type === 'major' ? (maj + 1) + '.0' : maj + '.' + (min + 1);
+  };
+
+  /* Publishing archives the previous current version (never deletes it). */
+  S.publish = (docId, { sections, type, summary, pushed, by, depts }) => {
+    const d = S.doc(docId);
+    const prev = d.versions.find((v) => v.status === 'current') || d.versions[d.versions.length - 1];
+    const v = S.nextVersion(prev.v, type);
+    d.versions.forEach((x) => { if (x.status === 'current') x.status = 'archived'; if (x.status === 'draft') x.status = 'superseded-draft'; });
+    d.versions.push({ v, date: state.today, type: prev.status === 'draft' ? 'initial' : type, by, status: 'current', pushed: !!pushed, summary, sections });
+    if (depts && depts.length) d.depts = depts;
+    d.status = 'published';
+    save();
+    return v;
+  };
+
+  S.archivedVersions = () => {
+    const rows = [];
+    state.documents.forEach((d) => d.versions.forEach((v) => {
+      if (v.status === 'archived') {
+        const next = d.versions[d.versions.indexOf(v) + 1];
+        rows.push({ doc: d, v, supersededOn: next ? next.date : '', acks: state.completions.filter((c) => c.kind === 'update' && c.ref === d.id + '@' + v.v).length });
+      }
+    }));
+    return rows.sort((a, b) => (a.supersededOn < b.supersededOn ? 1 : -1));
+  };
+
+  S.submit = (userId, type, text) => {
+    state.submissions.unshift({ id: 'S' + (state.submissions.length + 1) + '-' + Date.now(), user: userId, type, text, date: state.today, status: 'new' });
+    save();
+  };
+
+  S.team = (u) => {
+    if (u.role === 'admin') return state.users.filter((x) => x.role !== 'admin');
+    return state.users.filter((x) => x.supervisor === u.id);
+  };
+
+  S.transfer = (userId, newDept) => {
+    const u = S.user(userId);
+    if (u.dept === newDept) return;
+    u.deptHistory.push({ dept: u.dept, from: u.deptHistory.length ? u.deptHistory[u.deptHistory.length - 1].to : u.start, to: state.today });
+    u.dept = newDept;
+    save();
+  };
+
+  /* ---------- ASK: simulated retrieval over APPROVED, CURRENT docs only ---------- */
+  const STOP = new Set('a an the is are was were be to of and or in on for with what how do does i we our my me can when who where which should if it this that at by from any about need do you have get as there their they them your'.split(' '));
+  const stem = (w) => w.replace(/(ing|ed|es|s)$/,'');
+  const tokens = (t) => (t.toLowerCase().match(/[a-z0-9]+/g) || []).filter((w) => !STOP.has(w) && w.length > 1).map(stem);
+
+  S.ask = (u, question) => {
+    const q = tokens(question);
+    if (!q.length) return { found: false };
+    const hits = [];
+    S.visibleDocs(u).forEach((d) => {
+      const v = S.current(d); // archived versions are never searched
+      const titleT = tokens(d.title + ' ' + d.tags.join(' '));
+      v.sections.forEach((s) => {
+        const body = tokens(s.h + ' ' + s.body);
+        let score = 0;
+        q.forEach((w) => {
+          if (titleT.includes(w)) score += 2;
+          const n = body.filter((b) => b === w).length;
+          if (n) score += 1 + Math.min(n, 3) * 0.5;
+        });
+        const coverage = q.filter((w) => titleT.includes(w) || body.includes(w)).length / q.length;
+        hits.push({ d, v, s, score: score * coverage, coverage });
+      });
+    });
+    hits.sort((a, b) => b.score - a.score);
+    const top = hits[0];
+    if (!top || top.score < 2.5 || top.coverage < 0.5) return { found: false };
+    const related = hits.slice(1).filter((h) => h.d.id !== top.d.id && h.score > top.score * 0.6).slice(0, 2);
+    return { found: true, top, related };
+  };
+
+  window.Store = S;
+})();
+
+</script>
+  <script>
+/* =============================================================================
+   CrownRing Knowledge Center — prototype UI
+   Plain JavaScript, hash-based routing, no build step.
+   Routes:
+     #/learn                         Learning queue & progress
+     #/learn/module/:id[/:step]      Module player (lessons pulled from Know + quiz)
+     #/learn/update/:docId           Acknowledge a pushed document update
+     #/learn/record                  My learning record
+     #/know[/cat/:id]                Knowledge base
+     #/know/doc/:id[/:section]       Document reader
+     #/ask                           AI assistant (simulated)
+     #/team[/:userId]                Supervisor view
+     #/manage/...                    L&D admin (library, edit, review, archive, paths, requests)
+   ========================================================================== */
+(function () {
+  const S = window.Store;
+  const app = document.getElementById('app');
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtDate = (d) => d ? new Date(d + 'T12:00:00').toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' }) : '';
+  const firstName = (u) => u.name.split(' ')[0];
+
+  /* ---------- tiny markdown: paragraphs, "- " bullets, **bold** ---------- */
+  function md(text) {
+    const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    return String(text).split(/\n{2,}/).map((block) => {
+      const lines = block.split('\n');
+      if (lines.every((l) => l.trim().startsWith('- '))) return '<ul>' + lines.map((l) => '<li>' + inline(l.trim().slice(2)) + '</li>').join('') + '</ul>';
+      return '<p>' + lines.map(inline).join('<br>') + '</p>';
+    }).join('');
+  }
+  const plain = (text) => String(text).replace(/\*\*/g, '').replace(/^- /gm, '• ');
+
+  /* ---------- word diff (for "what changed" views) ---------- */
+  function wordDiff(a, b) {
+    const A = plain(a).split(/(\s+)/), B = plain(b).split(/(\s+)/);
+    const n = A.length, m = B.length;
+    const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = A[i] === B[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    let i = 0, j = 0, out = '';
+    while (i < n && j < m) {
+      if (A[i] === B[j]) { out += esc(A[i]); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) { out += '<span class="diff-del">' + esc(A[i]) + '</span>'; i++; }
+      else { out += '<span class="diff-add">' + esc(B[j]) + '</span>'; j++; }
+    }
+    while (i < n) out += '<span class="diff-del">' + esc(A[i++]) + '</span>';
+    while (j < m) out += '<span class="diff-add">' + esc(B[j++]) + '</span>';
+    return out.replace(/\n/g, '<br>');
+  }
+  function sectionDiff(oldV, newV) {
+    if (!oldV) return '<p class="muted">No previous version.</p>';
+    const heads = [...new Set([...oldV.sections.map((s) => s.h), ...newV.sections.map((s) => s.h)])];
+    return heads.map((h) => {
+      const a = oldV.sections.find((s) => s.h === h), b = newV.sections.find((s) => s.h === h);
+      if (!a) return `<h3>${esc(h)} <span class="badge ok">New section</span></h3><p class="diff-add">${esc(plain(b.body)).replace(/\n/g, '<br>')}</p>`;
+      if (!b) return `<h3>${esc(h)} <span class="badge warn">Removed</span></h3><p class="diff-del">${esc(plain(a.body)).replace(/\n/g, '<br>')}</p>`;
+      if (a.body === b.body) return `<h3>${esc(h)} <span class="badge">Unchanged</span></h3>`;
+      return `<h3>${esc(h)} <span class="badge info">Changed</span></h3><p>${wordDiff(a.body, b.body)}</p>`;
+    }).join('');
+  }
+
+  /* ---------- UI helpers ---------- */
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600);
+  }
+  function openModal(html, onMount) {
+    const m = $('#modal'); $('.modal-card', m).innerHTML = html; m.hidden = false;
+    const first = $('textarea, input, select, button', m); if (first) first.focus();
+    if (onMount) onMount($('.modal-card', m));
+  }
+  function closeModal() { $('#modal').hidden = true; }
+  $('#modal').addEventListener('click', (e) => { if (e.target.id === 'modal' || e.target.matches('[data-close]')) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
+  const progressBar = (pct) => `<div class="progress" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div>`;
+  const deptBadges = (list) => list.includes('ALL') ? '<span class="badge gold">All departments</span>' : list.map((d) => `<span class="badge">${esc(S.dept(d))}</span>`).join(' ');
+
+  /* ---------- chrome: nav + user switcher ---------- */
+  function renderChrome(route) {
+    const me = S.me();
+    const out = S.outstanding(me).length;
+    const items = [
+      ['learn', 'Learn', out ? `<span class="badge warn">${out}</span>` : ''],
+      ['know', 'Know', ''],
+      ['ask', 'Ask', ''],
+    ];
+    if (S.canSeeTeam(me)) items.push(['team', 'My Team', '']);
+    if (S.isAdmin(me)) items.push(['manage', 'Manage', '<span class="lock" aria-label="restricted">🔒</span>']);
+    $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra ? ' ' + extra : ''}</a>`).join('');
+
+    const sel = $('#userSwitch');
+    const roleLabel = { employee: 'Employee', supervisor: 'Supervisor', admin: 'L&D Admin' };
+    sel.innerHTML = S.state.users.map((u) => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)} — ${roleLabel[u.role]}, ${esc(S.dept(u.dept))}${u.sme ? ' (SME)' : ''}</option>`).join('');
+  }
+  $('#userSwitch').addEventListener('change', (e) => {
+    S.setMe(e.target.value);
+    const me = S.me();
+    // Bounce out of restricted areas when switching to a lower-access user.
+    if (location.hash.startsWith('#/manage') && !S.isAdmin(me)) location.hash = '#/learn';
+    else if (location.hash.startsWith('#/team') && !S.canSeeTeam(me)) location.hash = '#/learn';
+    else route();
+    toast('Now viewing as ' + me.name);
+  });
+  $('#resetDemo').addEventListener('click', () => { S.reset(); askLog = []; route(); toast('Demo data reset'); });
+  $('#suggestBtn').addEventListener('click', () => suggestModal());
+
+  function suggestModal(prefill = '', type = 'question') {
+    const me = S.me();
+    openModal(`
+      <h2 id="modalTitle">Ask L&amp;D or suggest a topic</h2>
+      <p class="muted small">Questions, requests for new documentation, or topics you'd like covered in training. ${me.sme ? 'As a subject-matter expert you can also submit content for a document.' : ''}</p>
+      <div class="field"><label for="sType">Type</label>
+        <select id="sType">
+          <option value="question" ${type === 'question' ? 'selected' : ''}>Question about existing documentation</option>
+          <option value="topic" ${type === 'topic' ? 'selected' : ''}>Suggest a topic or module</option>
+          <option value="request">Request new / updated documentation</option>
+          ${me.sme ? '<option value="content">Submit content as SME</option>' : ''}
+        </select></div>
+      <div class="field"><label for="sText">Details</label><textarea id="sText" placeholder="What do you need?">${esc(prefill)}</textarea></div>
+      <div class="row" style="justify-content:flex-end;margin-top:16px">
+        <button class="btn btn-ghost" data-close type="button">Cancel</button>
+        <button class="btn" id="sSend" type="button">Send to L&amp;D</button>
+      </div>`, (card) => {
+      $('#sSend', card).addEventListener('click', () => {
+        const text = $('#sText', card).value.trim();
+        if (!text) { $('#sText', card).focus(); return; }
+        S.submit(me.id, $('#sType', card).value, text);
+        closeModal(); toast('Sent to Learning & Development — thank you!');
+        if (location.hash.startsWith('#/manage/requests')) rerender();
+      });
+    });
+  }
+
+  /* =========================================================================
+     LEARN
+     ========================================================================= */
+  function viewLearn() {
+    const me = S.me();
+    const p = S.progress(me);
+    const current = p.stages.find((s) => s.unlocked && !s.complete && s.id !== 'ongoing') || p.stages[3];
+    const outstanding = S.outstanding(me);
+    const next = outstanding[0];
+    const ups = S.requiredUpdates(me);
+
+    const stageCards = p.stages.map((st) => {
+      const isOngoing = st.id === 'ongoing';
+      const modCards = st.items.map((m) => moduleCard(me, m, st.unlocked)).join('');
+      const upCards = isOngoing ? ups.map((x) => updateCard(me, x)).join('') : '';
+      const empty = !modCards && !upCards ? '<p class="muted small">Nothing here right now. New updates for your department will appear here.</p>' : '';
+      return `
+        <section class="stage" id="stage-${st.id}">
+          <div class="stage-head">
+            <div><span class="scope">Stage ${st.index + 1} · ${esc(st.scope)}${st.id === 'path' || st.id === 'ongoing' ? ' — ' + esc(S.dept(me.dept)) : ''}</span>
+              <h2>${esc(st.label)} ${st.complete && !isOngoing ? '<span class="badge ok">Complete</span>' : ''}${!st.unlocked ? ` <span class="badge">🔒 ${isOngoing ? 'Modules unlock after your learning path — updates always apply' : 'Unlocks after previous stage'}</span>` : ''}</h2>
+              <p class="muted small" style="margin:0">${esc(st.blurb)}</p></div>
+            <span class="muted small">${st.done} of ${st.total} done</span>
+          </div>
+          <div class="grid grid-3">${upCards}${modCards}</div>${empty}
+        </section>`;
+    }).join('');
+
+    return `
+      <div class="page-head">
+        <h1>Welcome back, ${esc(firstName(me))}</h1>
+        <p>Your training queue is ongoing — when processes change or new products launch, the update lands here so you never miss it. Everything you've completed stays open for review.</p>
+      </div>
+      <div class="card hero">
+        <div>
+          <div class="row spread"><h2 style="margin:0">Your progress</h2><a class="small" href="#/learn/record">View my learning record →</a></div>
+          <p class="muted small" style="margin:4px 0 12px">${esc(me.title)} · ${esc(S.dept(me.dept))}</p>
+          ${progressBar(p.pct)}
+          <div class="stage-track">${p.stages.map((st) => `
+            <a href="#/learn" data-jump="stage-${st.id}" class="stage-pill ${st.complete ? 'done' : st === current ? 'current' : !st.unlocked ? 'locked' : ''}" style="text-decoration:none">
+              <strong>${st.complete ? '✓ ' : ''}${esc(st.label)}</strong>${st.done}/${st.total}</a>`).join('')}</div>
+        </div>
+        <div style="text-align:center"><div class="pct">${p.pct}%</div><div class="muted small">${p.done} of ${p.total} items</div></div>
+      </div>
+      ${next ? `<div class="card" style="margin-top:16px;border-color:var(--accent)">
+          <div class="row spread"><div><span class="badge gold">Up next</span>
+            <h2 style="margin:8px 0 2px">${next.kind === 'update' ? 'Update: ' + esc(next.x.doc.title) + ' (v' + next.x.version.v + ')' : esc(next.m.title)}</h2>
+            <span class="muted small">${next.kind === 'update' ? 'A change to a procedure that applies to you' : esc(next.stage.label) + ' · ' + next.m.minutes + ' min'}</span></div>
+            <a class="btn" href="${next.kind === 'update' ? '#/learn/update/' + next.x.doc.id : '#/learn/module/' + next.m.id}">${next.kind === 'update' ? 'Review update' : 'Start'}</a></div></div>`
+        : `<div class="note" style="margin-top:16px">🎉 You're all caught up. New updates for your department will appear in <strong>Ongoing Learning</strong>.</div>`}
+      ${stageCards}`;
+  }
+
+  function moduleCard(me, m, unlocked) {
+    const done = S.done(me.id, 'module', m.id);
+    return `<a class="card module-card ${unlocked || done ? '' : 'locked'}" href="#/learn/module/${m.id}">
+      <div class="row spread"><span class="badge ${done ? 'ok' : 'gold'}">${done ? '✓ Completed' : m.stage === 'ongoing' ? 'Ongoing' : 'Module'}</span>${m.depts.length > 1 && !m.depts.includes('ALL') ? '<span class="badge info" title="Shared across departments — completing it once counts everywhere">Shared</span>' : ''}</div>
+      <h3>${esc(m.title)}</h3>
+      <p class="muted small" style="margin:0">${esc(m.intro)}</p>
+      <div class="meta"><span>⏱ ${m.minutes} min</span><span>· ${m.docs.length} lesson${m.docs.length > 1 ? 's' : ''}</span><span>· ${m.quiz.length}-question check</span></div>
+      ${done ? `<span class="muted small">Completed ${fmtDate(done.date)}${done.score != null ? ' · score ' + done.score + '%' : ''}</span>` : ''}
+    </a>`;
+  }
+  function updateCard(me, x) {
+    const done = S.done(me.id, 'update', x.ref);
+    return `<a class="card module-card update-card" href="#/learn/update/${x.doc.id}">
+      <div class="row spread"><span class="badge ${done ? 'ok' : 'warn'}">${done ? '✓ Acknowledged' : 'Update · action needed'}</span><span class="muted small">${fmtDate(x.version.date)}</span></div>
+      <h3>${esc(x.doc.title)} — v${esc(x.version.v)}</h3>
+      <p class="muted small" style="margin:0">${esc(x.version.summary.slice(0, 120))}${x.version.summary.length > 120 ? '…' : ''}</p>
+      <div class="meta"><span>⏱ 3 min</span><span>· Read the changes and acknowledge</span></div>
+    </a>`;
+  }
+
+  /* ---------- module player ---------- */
+  let quizAnswers = {};
+  function viewModule(id, stepStr) {
+    const me = S.me();
+    const m = S.mod(id);
+    if (!m) return notFound();
+    const stage = S.stageStatus(me).find((s) => s.id === m.stage);
+    if (stage && !stage.unlocked && !S.done(me.id, 'module', m.id)) return `<div class="card empty"><h2>This module is locked</h2><p>Complete the previous stage first.</p><a class="btn" href="#/learn">Back to Learn</a></div>`;
+    const docs = m.docs.map(S.doc).filter((d) => d && d.status === 'published');
+    const steps = ['intro', ...docs.map((d) => d.id), 'quiz'];
+    const step = Math.min(Math.max(parseInt(stepStr || '0', 10) || 0, 0), steps.length - 1);
+    const done = S.done(me.id, 'module', m.id);
+    const nav = `<nav aria-label="Module steps"><p class="muted small" style="margin:0 0 8px"><a href="#/learn">← Learn</a></p><ol>${steps.map((s, i) => {
+      const label = s === 'intro' ? 'Overview' : s === 'quiz' ? 'Knowledge check' : S.doc(s).title;
+      return `<li><a href="#/learn/module/${m.id}/${i}" class="${i === step ? 'active' : ''} ${i < step || done ? 'done' : ''}">${esc(label)}</a></li>`;
+    }).join('')}</ol>
+      <div style="margin-top:14px">${progressBar(Math.round((step / (steps.length - 1)) * 100))}</div></nav>`;
+
+    let body = '';
+    const s = steps[step];
+    if (s === 'intro') {
+      body = `<span class="badge gold">${esc(S.STAGES.find((x) => x.id === m.stage).label)}</span>
+        <h1 style="margin-top:8px">${esc(m.title)}</h1><p>${esc(m.intro)}</p>
+        <p class="muted">${docs.length} lesson${docs.length > 1 ? 's' : ''} · about ${m.minutes} minutes · a short knowledge check at the end (80% to pass).</p>
+        ${done ? `<div class="note">You completed this module on ${fmtDate(done.date)}. It stays open for review any time.</div>` : ''}
+        <div class="note info" style="margin-top:12px"><strong>Single source of truth:</strong> lessons are pulled live from the current version of each document in <em>Know</em>. When L&amp;D publishes a new version, this module updates automatically.</div>
+        <div style="margin-top:20px"><a class="btn" href="#/learn/module/${m.id}/1">Begin →</a></div>`;
+    } else if (s === 'quiz') {
+      body = quizView(m, me, done);
+    } else {
+      const d = S.doc(s), v = S.current(d);
+      body = `<div class="row spread"><span class="source-tag">📄 From Know: <a href="#/know/doc/${d.id}">${esc(d.title)}</a> · v${esc(v.v)} · updated ${fmtDate(v.date)}</span></div>
+        <h1 style="margin-top:12px">${esc(d.title)}</h1>
+        <div class="doc-body">${v.sections.map((x) => `<h2>${esc(x.h)}</h2>${md(x.body)}`).join('')}</div>
+        <div class="row spread" style="margin-top:28px">
+          <a class="btn btn-ghost" href="#/learn/module/${m.id}/${step - 1}">← Back</a>
+          <a class="btn" href="#/learn/module/${m.id}/${step + 1}">${steps[step + 1] === 'quiz' ? 'Go to knowledge check →' : 'Next lesson →'}</a></div>`;
+    }
+    return `<div class="reader">${nav}<article class="card">${body}</article></div>`;
+  }
+
+  function quizView(m, me, done) {
+    const key = m.id;
+    const st = quizAnswers[key] || (quizAnswers[key] = { picks: {}, submitted: false });
+    const qs = m.quiz.map((q, qi) => `
+      <div class="quiz-q"><p><strong>${qi + 1}. ${esc(q.q)}</strong></p>
+        ${q.options.map((o, oi) => {
+          let cls = '';
+          if (st.submitted) { if (oi === q.a) cls = 'correct'; else if (st.picks[qi] === oi) cls = 'wrong'; }
+          return `<label class="opt ${cls}"><input type="radio" name="q${qi}" value="${oi}" ${st.picks[qi] === oi ? 'checked' : ''} ${st.submitted ? 'disabled' : ''}> ${esc(o)}</label>`;
+        }).join('')}
+        ${st.submitted && st.picks[qi] !== q.a ? `<p class="small" style="margin-top:8px">Review: <a href="#/know/doc/${q.docRef}">${esc(S.doc(q.docRef).title)}</a></p>` : ''}
+      </div>`).join('');
+    let result = '';
+    if (st.submitted) {
+      const right = m.quiz.filter((q, i) => st.picks[i] === q.a).length;
+      const score = Math.round((right / m.quiz.length) * 100);
+      result = score >= 80
+        ? `<div class="note" style="border-color:var(--ok);background:var(--ok-soft)"><strong>Passed — ${score}%.</strong> This module is recorded as complete${S.done(me.id, 'module', m.id) ? '' : ''}. <a href="#/learn">Back to your queue →</a></div>`
+        : `<div class="note" style="border-color:var(--warn);background:var(--warn-soft)"><strong>${score}% — not quite.</strong> Review the highlighted sources and try again. <button class="btn btn-sm" id="retry" type="button" style="margin-left:8px">Try again</button></div>`;
+    }
+    return `<h1>Knowledge check</h1><p class="muted">${m.quiz.length} question${m.quiz.length > 1 ? 's' : ''} · 80% to pass${done ? ` · you passed on ${fmtDate(done.date)} — retake any time` : ''}</p>
+      <form id="quizForm">${qs}</form>
+      ${result || `<button class="btn" id="submitQuiz" type="button" style="margin-top:16px">Submit answers</button>`}`;
+  }
+
+  function bindModule(id) {
+    const me = S.me(); const m = S.mod(id); if (!m) return;
+    const st = quizAnswers[m.id];
+    const form = $('#quizForm');
+    if (form) form.addEventListener('change', (e) => { if (e.target.name) st.picks[+e.target.name.slice(1)] = +e.target.value; });
+    const sub = $('#submitQuiz');
+    if (sub) sub.addEventListener('click', () => {
+      if (Object.keys(st.picks).length < m.quiz.length) { toast('Please answer every question'); return; }
+      st.submitted = true;
+      const right = m.quiz.filter((q, i) => st.picks[i] === q.a).length;
+      const score = Math.round((right / m.quiz.length) * 100);
+      if (score >= 80) { S.complete(me.id, 'module', m.id, score); toast('Module complete ✓'); }
+      rerender();
+    });
+    const retry = $('#retry');
+    if (retry) retry.addEventListener('click', () => { quizAnswers[m.id] = { picks: {}, submitted: false }; rerender(); });
+  }
+
+  /* ---------- update acknowledgement ---------- */
+  function viewUpdate(docId) {
+    const me = S.me();
+    const d = S.doc(docId); if (!d) return notFound();
+    const v = S.current(d);
+    const idx = d.versions.indexOf(v);
+    const prev = d.versions.slice(0, idx).reverse().find((x) => x.status === 'archived');
+    const ref = d.id + '@' + v.v;
+    const done = S.done(me.id, 'update', ref);
+    return `<p class="small"><a href="#/learn">← Learn</a></p>
+      <div class="card stack">
+        <div><span class="badge warn">Process update</span> <span class="muted small">Published ${fmtDate(v.date)} · applies to ${esc(S.deptNames(d.depts))}</span>
+        <h1 style="margin-top:8px">${esc(d.title)} — v${esc(v.v)}</h1></div>
+        <div class="changes"><h3>What changed</h3><p style="margin:0">${esc(v.summary)}</p></div>
+        <details><summary style="cursor:pointer;font-weight:500">See the exact wording changes${prev ? ' (v' + esc(prev.v) + ' → v' + esc(v.v) + ')' : ''}</summary>
+          <div class="doc-body" style="margin-top:12px">${sectionDiff(prev, v)}</div></details>
+        <p>The full, current document is always in Know: <a href="#/know/doc/${d.id}">${esc(d.title)} →</a></p>
+        ${done ? `<div class="note" style="border-color:var(--ok);background:var(--ok-soft)">✓ You acknowledged this update on ${fmtDate(done.date)}. This is kept on your learning record.</div>`
+          : `<label class="opt"><input type="checkbox" id="ackBox"> I have read and understand these changes.</label>
+             <button class="btn" id="ackBtn" type="button" disabled>Acknowledge update</button>`}
+      </div>`;
+  }
+  function bindUpdate(docId) {
+    const box = $('#ackBox'), btn = $('#ackBtn');
+    if (!box) return;
+    box.addEventListener('change', () => { btn.disabled = !box.checked; });
+    btn.addEventListener('click', () => {
+      const d = S.doc(docId), v = S.current(d);
+      S.complete(S.me().id, 'update', d.id + '@' + v.v);
+      toast('Update acknowledged ✓'); location.hash = '#/learn';
+    });
+  }
+
+  /* ---------- learning record ---------- */
+  function recordTable(u) {
+    const rows = S.transcript(u).map((c) => {
+      let title, type;
+      if (c.kind === 'module') { const m = S.mod(c.ref); title = m ? m.title : c.ref; type = m ? S.STAGES.find((s) => s.id === m.stage).label : 'Module'; }
+      else { const [docId, v] = c.ref.split('@'); const d = S.doc(docId); title = (d ? d.title : docId) + ' — v' + v; type = 'Update acknowledged'; }
+      return `<tr><td>${fmtDate(c.date)}</td><td>${esc(title)}</td><td>${esc(type)}</td><td>${c.score != null ? c.score + '%' : '—'}</td></tr>`;
+    }).join('');
+    return `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Item</th><th>Type</th><th>Score</th></tr></thead><tbody>${rows || '<tr><td colspan="4" class="muted">No completions yet.</td></tr>'}</tbody></table></div>`;
+  }
+  function viewRecord() {
+    const me = S.me();
+    return `<p class="small"><a href="#/learn">← Learn</a></p>
+      <div class="page-head"><h1>My learning record</h1><p>A permanent record of every module and update you've completed — including acknowledgements of document versions that have since been archived.</p></div>
+      ${me.deptHistory.length ? `<div class="note info" style="margin-bottom:16px">Department history: ${me.deptHistory.map((h) => esc(S.dept(h.dept)) + ' (until ' + fmtDate(h.to) + ')').join(', ')} → <strong>${esc(S.dept(me.dept))}</strong>. Company-wide and shared modules carried over; only new departmental units were added to your queue.</div>` : ''}
+      <div class="card">${recordTable(me)}</div>`;
+  }
+
+  /* =========================================================================
+     KNOW
+     ========================================================================= */
+  let knowQuery = '';
+  function viewKnow(catId) {
+    const me = S.me();
+    const docs = S.visibleDocs(me);
+    const cats = S.state.categories;
+    const recent = docs.map((d) => ({ d, v: S.current(d) })).sort((a, b) => (a.v.date < b.v.date ? 1 : -1)).slice(0, 4);
+    const list = catId ? docs.filter((d) => d.category === catId) : docs;
+    return `
+      <div class="page-head"><h1>Know</h1>
+        <p>Searchable reference for day-to-day work. You're seeing documents for <strong>${S.isAdmin(me) ? 'all departments (admin view)' : esc(S.dept(me.dept)) + '</strong> plus company-wide documents<strong>'}</strong>.</p></div>
+      <div class="search-big"><input type="search" id="knowSearch" placeholder="Search documents, e.g. “rush order”, “14K”, “RMA”" value="${esc(knowQuery)}" aria-label="Search the knowledge base"></div>
+      <div id="knowResults" style="margin-top:20px"></div>
+      <div id="knowBrowse">
+        <div class="pill-row" style="margin:20px 0 16px">
+          <a class="chip ${!catId ? 'active' : ''}" href="#/know" style="text-decoration:none">All</a>
+          ${cats.map((c) => `<a class="chip ${catId === c.id ? 'active' : ''}" href="#/know/cat/${c.id}" style="text-decoration:none">${esc(c.name)}</a>`).join('')}
+        </div>
+        ${!catId ? `<div class="grid grid-3">${cats.map((c) => {
+          const n = docs.filter((d) => d.category === c.id).length;
+          return `<a class="card cat-card" href="#/know/cat/${c.id}"><span class="cat-icon" aria-hidden="true">${c.icon}</span><span><strong>${esc(c.name)}</strong><br><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></span></a>`;
+        }).join('')}</div>
+        <h2 style="margin-top:28px">Recently updated</h2>` : `<h2>${esc(S.cat(catId).name)}</h2>`}
+        <div class="card" style="padding:4px 16px">${(catId ? list.map((d) => ({ d, v: S.current(d) })) : recent).map(({ d, v }) => docRow(d, v)).join('') || '<p class="empty">No documents in this category for your department.</p>'}</div>
+      </div>`;
+  }
+  function docRow(d, v, snippet) {
+    return `<a class="doc-row" href="#/know/doc/${d.id}"><span><span class="doc-title">${esc(d.title)}</span><br>
+      <span class="muted small">${esc(S.cat(d.category).name)}${snippet ? ' · ' + snippet : ''}</span></span>
+      <span class="muted small" style="text-align:right;white-space:nowrap">v${esc(v.v)}<br>${fmtDate(v.date)}</span></a>`;
+  }
+  function bindKnow() {
+    const input = $('#knowSearch');
+    const run = () => {
+      knowQuery = input.value;
+      const q = knowQuery.trim().toLowerCase();
+      const res = $('#knowResults'), browse = $('#knowBrowse');
+      if (!q) { res.innerHTML = ''; browse.hidden = false; return; }
+      browse.hidden = true;
+      const words = q.split(/\s+/).filter(Boolean);
+      const hits = S.visibleDocs(S.me()).map((d) => {
+        const v = S.current(d);
+        const hay = (d.title + ' ' + d.tags.join(' ') + ' ' + v.sections.map((s) => s.h + ' ' + s.body).join(' ')).toLowerCase();
+        const score = words.reduce((a, w) => a + (hay.includes(w) ? 1 : 0) + (d.title.toLowerCase().includes(w) ? 2 : 0), 0);
+        const sec = v.sections.find((s) => words.some((w) => (s.h + ' ' + s.body).toLowerCase().includes(w)));
+        let snippet = '';
+        if (sec) {
+          const p = plain(sec.body).replace(/\n/g, ' ');
+          const at = Math.max(0, p.toLowerCase().indexOf(words.find((w) => p.toLowerCase().includes(w)) || '') - 40);
+          snippet = esc((at ? '…' : '') + p.slice(at, at + 130) + '…');
+          words.forEach((w) => { snippet = snippet.replace(new RegExp('(' + w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'ig'), '<mark>$1</mark>'); });
+        }
+        return { d, v, score, snippet, allMatch: words.every((w) => hay.includes(w)) };
+      }).filter((h) => h.score > 0 && h.allMatch).sort((a, b) => b.score - a.score);
+      res.innerHTML = `<p class="muted small">${hits.length} result${hits.length === 1 ? '' : 's'} for “${esc(knowQuery)}” · current versions only</p>
+        <div class="card" style="padding:4px 16px">${hits.map((h) => docRow(h.d, h.v, h.snippet)).join('') || `<div class="empty">No matching documents. <button class="link-btn" id="noResSuggest" type="button">Ask L&amp;D to cover this →</button></div>`}</div>`;
+      const nr = $('#noResSuggest'); if (nr) nr.addEventListener('click', () => suggestModal('I searched the Knowledge Center for "' + knowQuery + '" and couldn\'t find anything.', 'request'));
+    };
+    input.addEventListener('input', run);
+    if (knowQuery) run();
+  }
+
+  function viewDoc(id, section) {
+    const me = S.me();
+    const d = S.doc(id);
+    if (!d || (d.status !== 'published' && !S.isAdmin(me))) return notFound();
+    if (!S.isAdmin(me) && !(d.depts.includes('ALL') || d.depts.includes(me.dept))) return `<div class="card empty"><h2>Not available for your department</h2><p>This document is filtered to ${esc(S.deptNames(d.depts))}.</p><a class="btn" href="#/know">Back to Know</a></div>`;
+    const v = S.current(d);
+    if (!v) return notFound();
+    const owner = S.user(d.owner);
+    const history = d.versions.filter((x) => x.status === 'current' || x.status === 'archived').slice().reverse();
+    const usedIn = S.state.modules.filter((m) => m.docs.includes(d.id));
+    return `<p class="small"><a href="#/know">← Know</a> / <a href="#/know/cat/${d.category}">${esc(S.cat(d.category).name)}</a></p>
+      <div class="reader">
+        <nav aria-label="Sections"><ol>${v.sections.map((s, i) => `<li><a href="#/know/doc/${d.id}/${i}" class="${String(i) === section ? 'active' : ''}">${esc(s.h)}</a></li>`).join('')}</ol>
+          <div class="card small" style="margin-top:16px;padding:14px">
+            <div><strong>Version</strong> ${esc(v.v)} <span class="badge ok">Current</span></div>
+            <div class="muted">Updated ${fmtDate(v.date)}</div>
+            <div style="margin-top:8px"><strong>Applies to</strong><br>${deptBadges(d.depts)}</div>
+            <div style="margin-top:8px"><strong>Subject-matter expert</strong><br>${esc(owner ? owner.name : '—')}</div>
+            ${usedIn.length ? `<div style="margin-top:8px"><strong>Taught in</strong><br>${usedIn.map((m) => `<a href="#/learn/module/${m.id}">${esc(m.title)}</a>`).join('<br>')}</div>` : ''}
+          </div></nav>
+        <article class="card">
+          <h1>${esc(d.title)}</h1>
+          <div class="doc-body">${v.sections.map((s, i) => `<h2 id="sec-${i}">${esc(s.h)}</h2>${md(s.body)}`).join('')}</div>
+          <hr style="border:0;border-top:1px solid var(--border);margin:28px 0 16px">
+          <h3>Change log</h3>
+          <ul class="small" style="padding-left:1.2em">${history.map((x) => `<li><strong>v${esc(x.v)}</strong> · ${fmtDate(x.date)} — ${esc(x.summary)}${x.status === 'archived' ? ' <span class="muted">(archived)</span>' : ''}</li>`).join('')}</ul>
+          <div class="row" style="margin-top:16px">
+            <button class="btn btn-ghost btn-sm" id="docQuestion" type="button">Question about this document?</button>
+            <button class="btn btn-ghost btn-sm" type="button" onclick="window.print()">Print / save as PDF</button>
+            ${S.isAdmin(me) ? `<a class="btn btn-sm" href="#/manage/edit/${d.id}">Edit in Manage</a>` : ''}
+          </div>
+        </article>
+      </div>`;
+  }
+  function bindDoc(id, section) {
+    const b = $('#docQuestion'); if (b) b.addEventListener('click', () => suggestModal('About "' + S.doc(id).title + '": ', 'question'));
+    if (section != null) { const el = $('#sec-' + section); if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30); }
+  }
+
+  /* =========================================================================
+     ASK (simulated)
+     ========================================================================= */
+  let askLog = [];
+  const SUGGESTED = ['Who approves a rush order?', 'How long is an RMA valid?', 'What should I check if an order is stuck in pending production?', 'How much gold is in 14K?', 'What is the parental leave policy?'];
+  function answerHtml(r) {
+    if (!r.found) return `<p>I couldn't find a reliable answer to that in the approved documentation available to you, so I won't guess.</p>
+      <p class="small muted">You could ask your supervisor, or send the question to L&amp;D so it can be documented.</p>
+      <button class="btn btn-sm send-ld" type="button">Send this question to L&amp;D</button>`;
+    const t = r.top;
+    const text = plain(t.s.body).replace(/\n+/g, ' ').trim();
+    const short = text.length > 320 ? text.slice(0, 320).replace(/\s\S*$/, '') + '…' : text;
+    const idx = t.v.sections.indexOf(t.s);
+    const answer = t.s.body.length <= 600 ? md(t.s.body) : '<p>' + esc(short) + '</p>';
+    return `<p style="margin-bottom:6px"><strong>${esc(t.s.h)}</strong></p>${answer}
+      <div class="sources"><strong>Source</strong> — <a href="#/know/doc/${t.d.id}/${idx}">${esc(t.d.title)} › ${esc(t.s.h)}</a> <span class="muted">(v${esc(t.v.v)}, ${fmtDate(t.v.date)})</span>
+      ${r.related.length ? `<br><strong>Related</strong> — ${r.related.map((h) => `<a href="#/know/doc/${h.d.id}/${h.v.sections.indexOf(h.s)}">${esc(h.d.title)} › ${esc(h.s.h)}</a>`).join(' · ')}` : ''}
+      <br><span class="muted">Please check the source before acting.</span></div>`;
+  }
+  function viewAsk() {
+    const me = S.me();
+    return `<div class="page-head"><h1>Ask</h1>
+        <p>Ask a question in plain language. Answers come only from <strong>current, approved</strong> documents for your department (never archived versions), always with a link to the source.</p></div>
+      <div class="note info" style="margin-bottom:16px"><strong>Prototype:</strong> this demo uses simple keyword matching to show the intended behaviour. The production version would use an AI model restricted to the same approved documents — see <code>docs/REQUIREMENTS.md</code>.</div>
+      <div class="card">
+        <div class="chat" id="chat" aria-live="polite">
+          <div class="msg bot">Hi ${esc(firstName(me))} — I can help you find answers in the ${esc(S.isAdmin(me) ? 'company' : S.dept(me.dept))} documentation. What do you need?</div>
+          ${askLog.map((x) => `<div class="msg user">${esc(x.q)}</div><div class="msg bot" data-q="${esc(x.q)}">${answerHtml(x.r)}</div>`).join('')}
+        </div>
+        <div class="pill-row" style="margin-top:16px">${SUGGESTED.map((q) => `<button class="chip ask-chip" type="button">${esc(q)}</button>`).join('')}</div>
+        <form class="chat-input" id="askForm"><input type="text" id="askInput" placeholder="e.g. Do I need photos before approving a return?" aria-label="Your question" autocomplete="off"><button class="btn" type="submit">Ask</button></form>
+      </div>`;
+  }
+  function bindAsk() {
+    const go = (q) => { if (!q.trim()) return; askLog.push({ q, r: S.ask(S.me(), q) }); rerender(); setTimeout(() => { const c = $('#chat'); c.lastElementChild.scrollIntoView({ block: 'nearest' }); $('#askInput').focus(); }, 20); };
+    $('#askForm').addEventListener('submit', (e) => { e.preventDefault(); go($('#askInput').value); });
+    $$('.ask-chip').forEach((b) => b.addEventListener('click', () => go(b.textContent)));
+    $$('.send-ld').forEach((b) => b.addEventListener('click', () => {
+      const q = b.closest('.msg').dataset.q;
+      S.submit(S.me().id, 'question', q + '  (asked via the Ask assistant — no answer found)');
+      b.replaceWith(Object.assign(document.createElement('span'), { className: 'badge ok', textContent: '✓ Sent to L&D' }));
+    }));
+  }
+
+  /* =========================================================================
+     MY TEAM (supervisors see their reports; admin sees everyone)
+     ========================================================================= */
+  function viewTeam() {
+    const me = S.me();
+    const team = S.team(me);
+    const rows = team.map((u) => {
+      const p = S.progress(u);
+      const st = (id) => p.stages.find((s) => s.id === id);
+      const onb = ['foundation', 'products'].map(st).reduce((a, s) => [a[0] + s.done, a[1] + s.total], [0, 0]);
+      const path = st('path');
+      const pendingUpd = S.requiredUpdates(u).filter((x) => !S.done(u.id, 'update', x.ref)).length;
+      const last = S.transcript(u)[0];
+      const pc = (d, t) => t ? Math.round((d / t) * 100) : 100;
+      return `<tr>
+        <td><a href="#/team/${u.id}"><strong>${esc(u.name)}</strong></a><br><span class="muted small">${esc(u.title)}</span></td>
+        <td>${esc(S.dept(u.dept))}</td>
+        <td class="cell-pct">${pc(onb[0], onb[1])}%${progressBar(pc(onb[0], onb[1]))}</td>
+        <td class="cell-pct">${pc(path.done, path.total)}%${progressBar(pc(path.done, path.total))}</td>
+        <td>${pendingUpd ? `<span class="badge warn">${pendingUpd} pending</span>` : '<span class="badge ok">Up to date</span>'}</td>
+        <td><strong>${p.pct}%</strong></td>
+        <td class="muted small">${last ? fmtDate(last.date) : '—'}</td></tr>`;
+    }).join('');
+    return `<div class="page-head"><h1>My Team</h1><p>${me.role === 'admin' ? 'All employees (L&D view).' : 'Your direct reports.'} See onboarding progress and whether everyone has acknowledged the latest process updates.</p></div>
+      <div class="card table-wrap"><table><thead><tr><th>Employee</th><th>Department</th><th>Onboarding</th><th>Dept. path</th><th>Updates</th><th>Overall</th><th>Last activity</th></tr></thead><tbody>${rows || '<tr><td colspan="7" class="empty">No team members.</td></tr>'}</tbody></table></div>`;
+  }
+  function viewMember(id) {
+    const me = S.me();
+    const u = S.user(id);
+    if (!u || !S.team(me).includes(u)) return notFound();
+    const p = S.progress(u);
+    const out = S.outstanding(u);
+    return `<p class="small"><a href="#/team">← My Team</a></p>
+      <div class="page-head row spread"><div><h1>${esc(u.name)}</h1><p>${esc(u.title)} · ${esc(S.dept(u.dept))} · started ${fmtDate(u.start)}</p></div>
+        ${S.isAdmin(me) ? `<div style="min-width:240px"><label for="xfer">Department (demo a transfer)</label><select id="xfer">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>` : ''}</div>
+      <div class="grid grid-2">
+        <div class="card"><h2>Progress — ${p.pct}%</h2>${progressBar(p.pct)}
+          <table style="margin-top:12px"><tbody>${p.stages.map((s) => `<tr><td>${esc(s.label)}</td><td style="text-align:right">${s.done}/${s.total} ${s.complete ? '<span class="badge ok">✓</span>' : ''}</td></tr>`).join('')}</tbody></table></div>
+        <div class="card"><h2>Outstanding (${out.length})</h2>${out.length ? '<ul class="small" style="padding-left:1.2em">' + out.map((o) => `<li>${o.kind === 'update' ? '<span class="badge warn">Update</span> ' + esc(o.x.doc.title) + ' v' + esc(o.x.version.v) : esc(o.m.title)}</li>`).join('') + '</ul>' : '<p class="muted">All caught up.</p>'}</div>
+      </div>
+      <h2 style="margin-top:24px">Learning record</h2><div class="card">${recordTable(u)}</div>`;
+  }
+  function bindMember(id) {
+    const x = $('#xfer'); if (!x) return;
+    x.addEventListener('change', () => { S.transfer(id, x.value); toast('Moved to ' + S.dept(x.value) + ' — only new departmental units were added'); rerender(); });
+  }
+
+  /* =========================================================================
+     MANAGE (L&D admin only)
+     ========================================================================= */
+  const statusBadge = (d) => ({ published: '<span class="badge ok">Published</span>', in_review: '<span class="badge warn">In review</span>', draft: '<span class="badge">Draft</span>' }[d.status] || '');
+  function manageTabs(active) {
+    const reviewN = S.state.documents.filter((d) => d.status === 'in_review').length;
+    const reqN = S.state.submissions.filter((s) => s.status === 'new').length;
+    const t = [['overview', 'Overview'], ['library', 'Document library'], ['review', 'Review queue' + (reviewN ? ` <span class="badge warn">${reviewN}</span>` : '')], ['archive', 'Archive'], ['paths', 'Learning paths'], ['requests', 'Requests' + (reqN ? ` <span class="badge warn">${reqN}</span>` : '')]];
+    return `<div class="page-head"><h1>Manage <span class="lock">🔒 L&amp;D only</span></h1><p>Organize, review, version and publish documentation. Employees never see this area.</p></div>
+      <div class="tabs">${t.map(([k, l]) => `<a href="#/manage/${k}" class="${k === active ? 'active' : ''}">${l}</a>`).join('')}</div>`;
+  }
+
+  function viewManageOverview() {
+    const docs = S.state.documents;
+    const pub = docs.filter((d) => d.status === 'published').length;
+    const arch = S.archivedVersions().length;
+    const recentPublishes = [];
+    docs.forEach((d) => d.versions.forEach((v) => { if (v.status === 'current' || v.status === 'archived') recentPublishes.push({ d, v }); }));
+    recentPublishes.sort((a, b) => (a.v.date < b.v.date ? 1 : -1));
+    const employees = S.state.users.filter((u) => u.role !== 'admin');
+    const pendingAcks = employees.reduce((a, u) => a + S.requiredUpdates(u).filter((x) => !S.done(u.id, 'update', x.ref)).length, 0);
+    return manageTabs('overview') + `
+      <p class="muted small">Same mental model as today's SharePoint setup — three “folders”, but with automatic version history and learning records.</p>
+      <div class="grid grid-3">
+        <a class="card folder" href="#/manage/library" style="text-decoration:none;color:inherit"><span class="ico">📁</span><div><div class="count">${docs.length}</div><strong>Master documents</strong><div class="lock">🔒 Restricted · editable source of every doc</div></div></a>
+        <a class="card folder" href="#/manage/archive" style="text-decoration:none;color:inherit"><span class="ico">🗄️</span><div><div class="count">${arch}</div><strong>Archived versions</strong><div class="lock">🔒 Restricted · kept with completion records</div></div></a>
+        <a class="card folder" href="#/know" style="text-decoration:none;color:inherit"><span class="ico">📂</span><div><div class="count">${pub}</div><strong>Published (current)</strong><div class="lock">Visible in Know, filtered by department</div></div></a>
+      </div>
+      <div class="grid grid-2" style="margin-top:16px">
+        <div class="card"><h2>Recent publishing activity</h2><ul class="small" style="padding-left:1.2em">${recentPublishes.slice(0, 6).map(({ d, v }) => `<li><strong>${esc(d.title)}</strong> v${esc(v.v)} · ${fmtDate(v.date)} · ${v.type === 'major' ? (v.pushed ? '<span class="badge warn">Pushed to queues</span>' : '<span class="badge">Major</span>') : v.type === 'minor' ? '<span class="badge">Silent (minor)</span>' : '<span class="badge info">New</span>'}</li>`).join('')}</ul></div>
+        <div class="card"><h2>Needs attention</h2>
+          <p><a href="#/manage/review">${docs.filter((d) => d.status === 'in_review').length} SME submission(s) awaiting review →</a></p>
+          <p><a href="#/manage/requests">${S.state.submissions.filter((s) => s.status === 'new').length} new employee request(s) →</a></p>
+          <p><a href="#/team">${pendingAcks} outstanding update acknowledgement(s) across employees →</a></p>
+          <button class="btn btn-sm" id="newDocBtn" type="button">+ New document</button></div>
+      </div>`;
+  }
+
+  function viewLibrary() {
+    const docs = S.state.documents;
+    return manageTabs('library') + `
+      <div class="row spread" style="margin-bottom:12px"><input type="search" id="libFilter" placeholder="Filter by title, category, department or SME" style="max-width:380px"><button class="btn" id="newDocBtn" type="button">+ New document</button></div>
+      <div class="card table-wrap"><table id="libTable"><thead><tr><th>Document</th><th>Category</th><th>Shown to</th><th>SME</th><th>Version</th><th>Status</th><th></th></tr></thead><tbody>
+      ${docs.map((d) => { const v = S.current(d) || d.versions[d.versions.length - 1]; return `<tr data-search="${esc((d.title + ' ' + S.cat(d.category).name + ' ' + S.deptNames(d.depts) + ' ' + (S.user(d.owner) || {}).name).toLowerCase())}">
+        <td><strong>${esc(d.title)}</strong><br><span class="muted small">Master: ${esc(d.title.replace(/[^A-Za-z0-9]+/g, '-'))}_v${esc(v.v)}.docx</span></td>
+        <td>${esc(S.cat(d.category).name)}</td><td>${deptBadges(d.depts)}</td><td>${esc((S.user(d.owner) || {}).name || '')}</td>
+        <td>v${esc(v.v)}<br><span class="muted small">${fmtDate(v.date)}</span></td><td>${statusBadge(d)}</td>
+        <td style="white-space:nowrap">${d.status === 'published' ? `<a class="btn btn-ghost btn-sm" href="#/know/doc/${d.id}">View</a> ` : ''}<a class="btn btn-sm" href="#/manage/edit/${d.id}">${d.status === 'in_review' ? 'Review' : 'New version'}</a></td></tr>`; }).join('')}
+      </tbody></table></div>`;
+  }
+  function bindNewDoc() {
+    const b = $('#newDocBtn'); if (!b) return;
+    b.addEventListener('click', () => openModal(`
+      <h2 id="modalTitle">New document</h2>
+      <div class="field"><label for="ndTitle">Title</label><input type="text" id="ndTitle"></div>
+      <div class="field"><label for="ndCat">Category</label><select id="ndCat">${S.state.categories.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></div>
+      <div class="field"><label for="ndOwner">Subject-matter expert</label><select id="ndOwner">${S.state.users.map((u) => `<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select></div>
+      <div class="row" style="justify-content:flex-end;margin-top:16px"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="ndCreate" type="button">Create draft</button></div>`, (card) => {
+      $('#ndCreate', card).addEventListener('click', () => {
+        const title = $('#ndTitle', card).value.trim(); if (!title) return $('#ndTitle', card).focus();
+        const id = 'D' + (S.state.documents.length + 1) + 'x' + Date.now().toString(36).slice(-3);
+        S.state.documents.push({ id, title, category: $('#ndCat', card).value, depts: ['ALL'], owner: $('#ndOwner', card).value, status: 'draft', tags: [],
+          versions: [{ v: '0.1', date: S.state.today, type: 'draft', by: S.me().id, status: 'draft', summary: 'Draft created.', sections: [{ h: 'Purpose', body: '' }] }] });
+        S.save(); closeModal(); location.hash = '#/manage/edit/' + id;
+      });
+    }));
+  }
+  function bindLibrary() {
+    bindNewDoc();
+    $('#libFilter').addEventListener('input', (e) => { const q = e.target.value.toLowerCase(); $$('#libTable tbody tr').forEach((tr) => { tr.hidden = !tr.dataset.search.includes(q); }); });
+  }
+
+  /* ---------- edit / publish ---------- */
+  let editDraft = null;
+  function viewEdit(id) {
+    const d = S.doc(id); if (!d) return notFound();
+    const base = d.versions.find((v) => v.status === 'draft') || S.current(d);
+    if (!editDraft || editDraft.id !== id) editDraft = { id, sections: JSON.parse(JSON.stringify(base.sections)), depts: d.depts.slice() };
+    const isNew = !S.current(d);
+    const audience = S.state.users.filter((u) => u.role !== 'admin' && (editDraft.depts.includes('ALL') || editDraft.depts.includes(u.dept))).length;
+    return manageTabs(d.status === 'in_review' ? 'review' : 'library') + `
+      <div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(280px,340px);align-items:start" id="editGrid">
+        <div class="card">
+          <div class="row spread"><div><span class="muted small">${isNew ? 'New document' : 'Editing master · based on v' + esc(base.v)}</span><h2 style="margin:4px 0 0">${esc(d.title)}</h2></div>${statusBadge(d)}</div>
+          ${d.status === 'in_review' ? `<div class="note" style="margin-top:12px">Submitted by <strong>${esc(S.user(base.by).name)}</strong> (SME) on ${fmtDate(base.date)}. L&amp;D reviews structure, writing standards and formatting; the SME is accountable for technical accuracy.</div>` : ''}
+          <p class="muted small" style="margin-top:12px">Master file: <strong>${esc(d.title.replace(/[^A-Za-z0-9]+/g, '-'))}.docx</strong> · 🔒 restricted. <span title="In production: upload the Word master; the site converts it to web content + PDF">(In production: upload/replace Word master here.)</span></p>
+          <div id="sections" style="margin-top:12px">${editDraft.sections.map((s, i) => `
+            <div class="section-editor" data-i="${i}">
+              <div class="row spread"><label for="h${i}" style="margin:0">Section ${i + 1} heading</label><button class="link-btn small rm-sec" type="button">Remove</button></div>
+              <input type="text" id="h${i}" class="sec-h" value="${esc(s.h)}" style="margin:4px 0 8px">
+              <textarea class="sec-b" aria-label="Section ${i + 1} body" style="min-height:100px">${esc(s.body)}</textarea></div>`).join('')}</div>
+          <button class="btn btn-ghost btn-sm" id="addSec" type="button">+ Add section</button>
+          <p class="muted small" style="margin-top:8px">Formatting: blank line = new paragraph, “- ” = bullet, **bold**.</p>
+        </div>
+        <aside class="card stack">
+          <h2 style="margin:0">Publish</h2>
+          <div><label>Shown to (display filter)</label>
+            <div class="pill-row">${[{ id: 'ALL', name: 'All departments' }, ...S.state.departments].map((x) => `<label class="chip ${editDraft.depts.includes(x.id) ? 'active' : ''}" style="font-weight:400;margin:0"><input type="checkbox" class="dept-cb" value="${x.id}" ${editDraft.depts.includes(x.id) ? 'checked' : ''} hidden>${esc(x.name)}</label>`).join('')}</div>
+            <p class="muted small" style="margin:6px 0 0">${audience} employee(s) will see this document.</p></div>
+          ${isNew ? '' : `<div><label>Type of change</label>
+            <label class="radio-card"><input type="radio" name="ctype" value="minor" ${editDraft.ctype !== 'major' ? 'checked' : ''}><span><strong>Minor</strong> — formatting, typos, clarification<br><span class="muted small">Publishes silently as v${esc(S.nextVersion(S.current(d).v, 'minor'))}. Not added to learning queues.</span></span></label>
+            <label class="radio-card" style="margin-top:8px"><input type="radio" name="ctype" value="major" ${editDraft.ctype === 'major' ? 'checked' : ''}><span><strong>Major</strong> — process or policy change<br><span class="muted small">Publishes as v${esc(S.nextVersion(S.current(d).v, 'major'))}.</span></span></label></div>`}
+          <label class="opt" style="margin:0"><input type="checkbox" id="pushQ" ${isNew || editDraft.ctype === 'major' ? '' : 'disabled'} ${editDraft.push ? 'checked' : ''}> <span>Push to learning queues${isNew ? ' (e.g. a product launch everyone must read)' : ''}</span></label>
+          <div><label for="summary">Summary of changes <span class="muted small">(employees see this in their queue)</span></label>
+            <textarea id="summary" style="min-height:90px" placeholder="${isNew ? 'Initial release.' : 'e.g. Retailers must now send photos before an RMA is approved.'}">${esc(editDraft.summary || '')}</textarea></div>
+          ${isNew ? '' : `<details><summary style="cursor:pointer;font-weight:500">Preview changes vs. v${esc(S.current(d).v)}</summary><div class="doc-body small" id="diffPreview" style="margin-top:8px"></div></details>`}
+          <p class="muted small" style="margin:0">On publish, v${esc(isNew ? '1.0' : S.current(d).v)}${isNew ? ' becomes current' : ' moves to the Archive (restricted) with its completion records'}.</p>
+          <div class="row"><button class="btn" id="publishBtn" type="button">Publish</button>
+            ${d.status === 'in_review' ? '<button class="btn btn-ghost" id="returnBtn" type="button">Return to SME</button>' : ''}
+            <a class="btn btn-ghost" href="#/manage/library" id="cancelEdit">Cancel</a></div>
+        </aside>
+      </div>`;
+  }
+  function bindEdit(id) {
+    const d = S.doc(id); const isNew = !S.current(d);
+    const grid = $('#editGrid'); if (window.innerWidth < 760) grid.style.gridTemplateColumns = '1fr';
+    const collect = () => {
+      editDraft.sections = $$('.section-editor').map((el) => ({ h: $('.sec-h', el).value, body: $('.sec-b', el).value }));
+      editDraft.summary = $('#summary').value; editDraft.push = $('#pushQ').checked;
+      const ct = $('input[name=ctype]:checked'); if (ct) editDraft.ctype = ct.value;
+    };
+    const refreshDiff = () => { const p = $('#diffPreview'); if (p) { collect(); p.innerHTML = sectionDiff(S.current(d), { sections: editDraft.sections }); } };
+    $$('.sec-h, .sec-b').forEach((el) => el.addEventListener('input', refreshDiff));
+    refreshDiff();
+    $('#addSec').addEventListener('click', () => { collect(); editDraft.sections.push({ h: 'New section', body: '' }); rerender(); });
+    $$('.rm-sec').forEach((b) => b.addEventListener('click', () => { collect(); editDraft.sections.splice(+b.closest('.section-editor').dataset.i, 1); rerender(); }));
+    $$('.dept-cb').forEach((cb) => cb.addEventListener('change', () => {
+      collect();
+      if (cb.value === 'ALL' && cb.checked) editDraft.depts = ['ALL'];
+      else { editDraft.depts = $$('.dept-cb').filter((x) => x.checked && x.value !== 'ALL').map((x) => x.value); if (!editDraft.depts.length) editDraft.depts = ['ALL']; }
+      rerender();
+    }));
+    $$('input[name=ctype]').forEach((r) => r.addEventListener('change', () => { const major = r.value === 'major' && r.checked; $('#pushQ').disabled = !major; $('#pushQ').checked = major; }));
+    $('#cancelEdit').addEventListener('click', () => { editDraft = null; });
+    const ret = $('#returnBtn');
+    if (ret) ret.addEventListener('click', () => { d.status = 'draft'; S.save(); editDraft = null; toast('Returned to SME with comments'); location.hash = '#/manage/review'; });
+    $('#publishBtn').addEventListener('click', () => {
+      collect();
+      const type = isNew ? 'initial' : ($('input[name=ctype]:checked') || {}).value;
+      const pushed = $('#pushQ').checked;
+      const summary = $('#summary').value.trim() || (isNew ? 'Initial release.' : '');
+      if (!summary) { toast('Add a summary of changes'); $('#summary').focus(); return; }
+      editDraft.sections = editDraft.sections.map((s) => ({ h: s.h.trim(), body: s.body.trim() }));
+      if (editDraft.sections.some((s) => !s.h || !s.body)) { toast('Every section needs a heading and content'); return; }
+      const v = S.publish(id, { sections: editDraft.sections, type: type === 'initial' ? 'major' : type, summary, pushed, by: S.me().id, depts: editDraft.depts });
+      const sub = S.state.submissions.find((s) => s.docId === id); if (sub) { sub.status = 'done'; S.save(); }
+      editDraft = null;
+      toast(`Published v${v}` + (pushed ? ' — added to learning queues' : ' — no queue item created'));
+      location.hash = '#/manage/library';
+    });
+  }
+
+  function viewReview() {
+    const docs = S.state.documents.filter((d) => d.status === 'in_review' || d.status === 'draft');
+    return manageTabs('review') + `<p class="muted">SMEs submit content; L&amp;D shapes it to the writing standard and publishes. Drafts are never visible to employees or the Ask assistant.</p>
+      <div class="card" style="padding:4px 16px">${docs.map((d) => { const v = d.versions[d.versions.length - 1]; return `<div class="doc-row"><span><span class="doc-title">${esc(d.title)}</span> ${statusBadge(d)}<br><span class="muted small">From ${esc(S.user(v.by).name)} · ${fmtDate(v.date)} · ${esc(v.summary)}</span></span><a class="btn btn-sm" href="#/manage/edit/${d.id}">Review →</a></div>`; }).join('') || '<p class="empty">Nothing waiting for review.</p>'}</div>`;
+  }
+
+  function viewArchive() {
+    const rows = S.archivedVersions();
+    return manageTabs('archive') + `<p class="muted">Every superseded version is kept here, read-only, together with who acknowledged it. Archived versions are excluded from Know search and from the Ask assistant.</p>
+      <div class="card table-wrap"><table><thead><tr><th>Document</th><th>Version</th><th>In effect</th><th>Change type</th><th>Acknowledged by</th><th></th></tr></thead><tbody>
+      ${rows.map((r) => `<tr><td>${esc(r.doc.title)}</td><td>v${esc(r.v.v)}</td><td class="small">${fmtDate(r.v.date)} → ${fmtDate(r.supersededOn)}</td><td>${r.v.pushed ? '<span class="badge warn">Pushed</span>' : r.v.type === 'minor' ? '<span class="badge">Minor</span>' : '<span class="badge info">' + esc(r.v.type) + '</span>'}</td>
+        <td>${r.v.pushed ? r.acks + ' employee(s)' : '<span class="muted">n/a</span>'}</td><td><a class="btn btn-ghost btn-sm" href="#/manage/archive/${r.doc.id}/${r.v.v}">Open</a></td></tr>`).join('') || '<tr><td colspan="6" class="empty">No archived versions.</td></tr>'}
+      </tbody></table></div>`;
+  }
+  function viewArchived(docId, ver) {
+    const d = S.doc(docId); const v = d && d.versions.find((x) => x.v === ver);
+    if (!v) return notFound();
+    const acks = S.state.completions.filter((c) => c.kind === 'update' && c.ref === d.id + '@' + v.v);
+    return manageTabs('archive') + `<p class="small"><a href="#/manage/archive">← Archive</a></p>
+      <div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(240px,300px);align-items:start">
+        <article class="card"><span class="badge">🗄️ Archived · read-only</span><h1 style="margin-top:8px">${esc(d.title)} — v${esc(v.v)}</h1><p class="muted small">${esc(v.summary)}</p>
+          <div class="doc-body">${v.sections.map((s) => `<h2>${esc(s.h)}</h2>${md(s.body)}`).join('')}</div></article>
+        <aside class="card"><h3>Acknowledgement record</h3>${acks.length ? '<ul class="small" style="padding-left:1.2em">' + acks.map((c) => `<li>${esc(S.user(c.user).name)} — ${fmtDate(c.date)}</li>`).join('') + '</ul>' : '<p class="muted small">This version was not pushed to learning queues, so no acknowledgements were required.</p>'}</aside>
+      </div>`;
+  }
+
+  function viewPaths() {
+    const depts = S.state.departments;
+    const stageBlock = (st, mods) => `<div class="card"><h3>${esc(st.label)}</h3>${mods.map((m) => `<div style="padding:8px 0;border-top:1px solid var(--border)"><strong>${esc(m.title)}</strong> ${m.depts.includes('ALL') ? '' : m.depts.length > 1 ? '<span class="badge info">Shared</span>' : ''}<br>
+      <span class="small muted">Lessons from Know: </span>${m.docs.map((id) => `<a class="small" href="#/know/doc/${id}">${esc(S.doc(id).title)}</a>`).join(', ')}<span class="small muted"> · ${m.quiz.length} quiz Q</span></div>`).join('') || '<p class="muted small">None yet.</p>'}</div>`;
+    return manageTabs('paths') + `<p class="muted">Modules are lightweight wrappers: an intro, an ordered list of Know documents, and a short quiz. No content is duplicated.</p>
+      <h2>All employees</h2><div class="grid grid-2">${S.STAGES.slice(0, 2).map((st) => stageBlock(st, S.state.modules.filter((m) => m.stage === st.id))).join('')}</div>
+      ${depts.map((dp) => `<h2 style="margin-top:24px">${esc(dp.name)}</h2><div class="grid grid-2">${S.STAGES.slice(2).map((st) => stageBlock(st, S.state.modules.filter((m) => m.stage === st.id && (m.depts.includes(dp.id) || m.depts.includes('ALL'))))).join('')}</div>`).join('')}`;
+  }
+
+  function viewRequests() {
+    const label = { question: 'Question', topic: 'Topic idea', request: 'Doc request', content: 'SME content' };
+    return manageTabs('requests') + `<p class="muted">Everything employees send through “Suggest a topic”, from a document page, or when the Ask assistant can't find an answer.</p>
+      <div class="card table-wrap"><table><thead><tr><th>Date</th><th>From</th><th>Type</th><th>Details</th><th>Status</th></tr></thead><tbody>
+      ${S.state.submissions.map((s) => `<tr><td class="small">${fmtDate(s.date)}</td><td>${esc(S.user(s.user).name)}<br><span class="muted small">${esc(S.dept(S.user(s.user).dept))}</span></td><td><span class="badge">${label[s.type] || s.type}</span></td><td>${esc(s.text)}</td>
+        <td><select class="req-status" data-id="${s.id}" aria-label="Status">${['new', 'in_progress', 'planned', 'done', 'declined'].map((x) => `<option value="${x}" ${s.status === x ? 'selected' : ''}>${x.replace('_', ' ')}</option>`).join('')}</select></td></tr>`).join('')}
+      </tbody></table></div>`;
+  }
+  function bindRequests() { $$('.req-status').forEach((sel) => sel.addEventListener('change', () => { S.state.submissions.find((s) => s.id === sel.dataset.id).status = sel.value; S.save(); toast('Status updated'); })); }
+
+  function rerender() { route._keepScroll = true; route(); route._keepScroll = false; }
+  function notFound() { return `<div class="card empty"><h2>Page not found</h2><a class="btn" href="#/learn">Go to Learn</a></div>`; }
+
+  /* =========================================================================
+     ROUTER
+     ========================================================================= */
+  function route() {
+    const parts = location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
+    if (!parts.length) parts.push('learn');
+    const me = S.me();
+    renderChrome(parts);
+    let html = '', bind = () => {};
+    const [a, b, c, d] = parts;
+    if (a === 'learn') {
+      if (b === 'module') { html = viewModule(c, d); bind = () => bindModule(c); }
+      else if (b === 'update') { html = viewUpdate(c); bind = () => bindUpdate(c); }
+      else if (b === 'record') html = viewRecord();
+      else { html = viewLearn(); bind = () => $$('[data-jump]').forEach((el) => el.addEventListener('click', (e) => { e.preventDefault(); const t = document.getElementById(el.dataset.jump); if (t) t.scrollIntoView({ behavior: 'smooth' }); })); }
+    } else if (a === 'know') {
+      if (b === 'doc') { html = viewDoc(c, d); bind = () => bindDoc(c, d); }
+      else { html = viewKnow(b === 'cat' ? c : null); bind = bindKnow; }
+    } else if (a === 'ask') { html = viewAsk(); bind = bindAsk; }
+    else if (a === 'team') {
+      if (!S.canSeeTeam(me)) html = notFound();
+      else if (b) { html = viewMember(b); bind = () => bindMember(b); }
+      else html = viewTeam();
+    } else if (a === 'manage') {
+      if (!S.isAdmin(me)) html = `<div class="card empty"><h2>Restricted</h2><p>Manage is available to Learning &amp; Development only.</p><a class="btn" href="#/learn">Go to Learn</a></div>`;
+      else if (b === 'library') { html = viewLibrary(); bind = bindLibrary; }
+      else if (b === 'edit') { html = viewEdit(c); bind = () => bindEdit(c); }
+      else if (b === 'review') html = viewReview();
+      else if (b === 'archive') html = c ? viewArchived(c, d) : viewArchive();
+      else if (b === 'paths') html = viewPaths();
+      else if (b === 'requests') { html = viewRequests(); bind = bindRequests; }
+      else { html = viewManageOverview(); bind = bindNewDoc; }
+    } else html = notFound();
+
+    app.innerHTML = html;
+    bind();
+    if (!route._keepScroll) window.scrollTo(0, 0);
+  }
+
+  let lastHash = location.hash;
+  window.addEventListener('hashchange', () => {
+    // Re-rendering the same page (e.g. after a quiz submit) shouldn't jump to top; navigation should.
+    if (!location.hash.startsWith('#/know/doc/') || lastHash.split('/').slice(0, 4).join('/') !== location.hash.split('/').slice(0, 4).join('/')) route._keepScroll = false;
+    else route._keepScroll = true;
+    lastHash = location.hash;
+    route();
+    route._keepScroll = false;
+  });
+  route();
+})();
+
+</script>
 </body>
 </html>
