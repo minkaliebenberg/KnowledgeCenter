@@ -10,10 +10,12 @@ users                (existing)  id, name, role[employee|supervisor|admin], depa
                                  supervisor_id, start_date, sme_department_id NULL
 user_department_history          user_id, department_id, from_date, to_date
 
-categories                       id, name, sort_order
+folders                          id, name, icon, sort_order     -- Policies & Procedures, Reference Materials, ...
 
-documents                        id, title, category_id, owner_user_id (SME),
-                                 status[draft|in_review|published|retired], tags[]
+documents                        id, title, folder_id, type[SOP|Policy|Manual|Quick Reference|...],
+                                 owner_user_id (SME), status[draft|review|active|retired],
+                                 next_review_date, source_of_truth BOOL, tags[]
+document_links                   from_document_id, to_document_id, section   -- Outgoing/Incoming Links
 document_audiences               document_id, department_id | 'ALL'      -- display filter
 
 document_versions                id, document_id, version ('2.0'), status[draft|current|archived],
@@ -35,6 +37,10 @@ completions                      id, user_id, kind[module|update], module_id NUL
                                  completed_at, score NULL
   -- never deleted; archived versions keep their acknowledgement records
 
+roadmap_items                    id, title, status[idea|planned|progress|review|done|cancelled],
+                                 priority[High|Med|Low], work[Create New|Update Existing|Format Drafted],
+                                 effort[Minor|Small|Med|Large|Major], type, notes, document_id NULL
+
 submissions                      id, user_id, type[question|topic|request|content|ask_unanswered],
                                  text, document_id NULL, status[new|in_progress|planned|done|declined],
                                  created_at
@@ -43,9 +49,9 @@ submissions                      id, user_id, type[question|topic|request|conten
 ## Key queries (the business rules)
 
 **Visible documents for a user (Know + Ask):**
-`documents.status = published` AND current version exists AND (audience = ALL OR audience = user.department_id). Admins see all.
+`documents.status = active` AND current version exists AND (audience = ALL OR audience = user.department_id). Admins see all.
 
-**Required modules:** modules whose audience is ALL or the user's department. Stage unlocking is computed from completions.
+**Required modules:** modules whose audience is ALL or the user's department, ordered by stage (no locking).
 
 **Required updates:** for each visible document whose *current* version has `pushed_to_queue = true`:
 include it if `user.start_date < version.published_at` AND there is no unfinished required module that has this document as a lesson.
@@ -62,7 +68,7 @@ GET  /kc/updates/:versionId             summary, diff vs previous version
 POST /kc/updates/:versionId/ack
 GET  /kc/me/record                      transcript
 
-GET  /kc/docs?category=&q=              visible current docs
+GET  /kc/docs?folder=&q=              visible current docs
 GET  /kc/docs/:id                       current version + change log
 
 POST /kc/ask {question}                 → {answer, citations[{docId, version, sectionId}]} | {found:false}
@@ -75,6 +81,8 @@ GET/POST/PATCH /kc/admin/documents
 POST /kc/admin/documents/:id/versions   {sections|docxFile, change_type, pushed, summary, audiences}
 GET  /kc/admin/archive
 GET/PATCH /kc/admin/submissions
+GET/POST/PATCH /kc/admin/roadmap
+GET  /kc/admin/documents/:id/acks       who has / hasn't acknowledged the current pushed version
 GET/POST/PATCH /kc/admin/modules
 POST /kc/submissions                    (any user) suggest a topic / ask L&D
 ```

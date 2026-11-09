@@ -1,51 +1,40 @@
 # CrownRing Knowledge Center: Prototype
 
-A clickable proof of concept for a **Knowledge Center** module to be added to the CrownRing internal website. It replaces the current SharePoint setup (restricted Word masters → exported PDFs in open folders) with one system for onboarding, continuous learning, reference documentation, and controlled publishing.
+A clickable proof of concept for a **Knowledge Center** in the CrownRing internal website. It replaces today's SharePoint setup (restricted Word masters → PDFs in open folders) with one place for onboarding, ongoing training, reference documents, and controlled publishing.
 
-> **This is a prototype.** It runs in the browser with sample data and no backend. Its purpose is to show *how it should work*. It's not production code. All company content in it is placeholder text.
+> **Prototype only.** It runs in the browser with no backend. Folder names and document titles mirror the real SharePoint library, but **all document text is placeholder** and every person except Minka is fictional.
 
-## Run it
+**Live demo:** https://minkaliebenberg.github.io/KnowledgeCenter/
 
-No build step and no dependencies. Pick one:
+Use the **"viewing as"** dropdown in the dark bar to switch between people and roles. **Reset demo** restores the starting data.
 
-- **GitHub Pages:** Settings → Pages → Deploy from branch → `main` / root. Then open the Pages URL.
-- **Locally:** `python3 -m http.server` in this folder, then open http://localhost:8000. (You can also open `index.html` directly.)
-
-Use the **"viewing as"** switcher in the dark bar at the top to change roles. **Reset demo** restores the sample data.
-
-## The four areas
+## The five areas
 
 | Area | Who sees it | What it does |
 |---|---|---|
-| **Learn** | Everyone | Staged training queue with a progress bar: Company Foundation → Products & Industry → Department Learning Path → Ongoing Learning. Lessons are pulled live from Know documents. Short quizzes, a permanent learning record, and update acknowledgements. |
-| **Know** | Everyone (filtered by department) | Searchable knowledge base in 6 categories. Shows only current, published versions, and each document has a change log. |
-| **Ask** | Everyone | AI assistant (**simulated** here). It answers only from current, approved docs for the user's department, always links the source, and says so when it can't find an answer. |
-| **My Team** | Supervisors (their reports), L&D (everyone) | Onboarding and path progress, plus outstanding update acknowledgements per person. |
-| **Manage** | L&D admin only | Document library (masters), SME review queue, publishing with **minor/silent** vs **major/pushed** changes, archive with acknowledgement records, learning-path map, and an employee requests inbox. |
+| **Learn** | Everyone | One progress bar and an ordered **To do** list: process updates first, then onboarding, department and ongoing modules. Completed items stay open for review. |
+| **Know** | Everyone, filtered by department | Search bar plus the same folders as SharePoint (Policies & Procedures, Reference Materials, Guidebooks, Sales Training Guides, CES). Shows current versions only. |
+| **Ask** | Everyone | AI assistant (**simulated**). It answers only from current documents, links the source, and says so when it can't find an answer. |
+| **My Team** | Supervisors (their team), L&D (everyone) | Onboarding, department training and outstanding update acknowledgements per person. |
+| **Manage** | L&D only | **Register** (every document with version, status, owner and next review, like the Documentation Map) and **Roadmap** (employee requests → ideas → planned → in progress → under review → completed). Each document page holds its version history (the archive), change log, acknowledgement tracking and links. |
 
-Every user also gets **Suggest a topic**, which sends questions, documentation requests and topic ideas to L&D. SMEs can submit content through it as well.
+## 5-minute demo
 
-## Suggested demo script (5 minutes)
-
-1. **Priya (new CS hire):** Learn shows her progress, the "Up next" item, and the Department Path locked until she finishes Products & Industry. Open *Jewellery Fundamentals*: the lessons come from Know documents. Pass the quiz.
-2. **Jordan (experienced CS rep):** Learn has an **update** for the RMA procedure. Open it to see the plain-language summary and the exact wording changes, then acknowledge it.
-3. **Ask** (any user): try "Who approves a rush order?" and then "What is the parental leave policy?". The second one is a no-answer case, and the user can send the question to L&D.
-4. **Dana (CS supervisor):** My Team shows who has finished onboarding and who still owes an update acknowledgement.
-5. **Minka (L&D):** Manage → Document library → *Rush Order Policy* → New version. Edit a section, choose **Major**, push it to queues, write a summary, and publish. Then check the Archive (the old version is kept with its records). Review queue → *Aurora Bridal* → publish it as a launch pushed to everyone.
-6. **Department transfer:** as Minka, go to My Team → Jordan → change his department to Shipping. Switch to Jordan: his company-wide and shared modules carry over, and only the Shipping units are new.
+1. **Priya (new hire):** Learn shows her progress and to-do list. Open *Jewellery Fundamentals*: the lessons come straight from Know documents. Pass the quiz.
+2. **Jordan (experienced):** the top of his to-do list is the *Heirloom Remount* v2.2 update. Open it, see what changed, and acknowledge.
+3. **Ask:** try "What is a memo?", then "What is the parental leave policy?" (a no-answer case that can be sent to L&D).
+4. **Dana (supervisor):** My Team shows who's behind.
+5. **Minka (L&D):** Manage → Register → filter **Review overdue**. Open *Freight Charges* to see the four documents that link to it. Click **New version**, choose **Major**, add to learning queues and publish. The old version moves into its history, and the acknowledgement tracker appears.
+6. **Roadmap:** add an employee request to the roadmap, and open *NC Fully Mounted Service* (Under review) to publish it.
 
 ## Files
 
 ```
-index.html          Page shell
-css/styles.css      All styling (colour tokens at the top, with dark mode)
-js/data.js          Sample data: departments, users, documents + versions, modules, completions
-js/store.js         Business rules (who sees what, what's required, versioning, Ask retrieval)
-js/app.js           Views + hash router
-docs/REQUIREMENTS.md  Functional requirements & business rules (for the developer)
-docs/DATA-MODEL.md    Proposed database tables / API endpoints
+index.html          Built single-file version (what GitHub Pages serves)
+src/                Source: index.html, css/styles.css, js/data.js, js/store.js, js/app.js
+build.py            Rebuilds index.html from src/
+docs/REQUIREMENTS.md  Business rules (start here)
+docs/DATA-MODEL.md    Proposed database tables and API
 ```
 
-## For the web developer
-
-Start with **`docs/REQUIREMENTS.md`** and **`docs/DATA-MODEL.md`**. The prototype's code isn't meant to be lifted as-is. The important parts are the business rules in `js/store.js` (they're short and commented), and those belong on the server.
+The business rules live in `src/js/store.js`. They're short and commented, and they belong on the server in production.
