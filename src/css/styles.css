@@ -1,8 +1,9 @@
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
 :root {
-  --bg: #f7f5f0; --surface: #ffffff; --surface-2: #f1ede4; --text: #1d2230; --muted: #6a6f7c; --border: #e5dfd3;
-  --accent: #a87b2d; --accent-strong: #8a6220; --accent-soft: #f4ead5; --navy: #1f2a44;
+  --bg: #fbf9f4; --surface: #ffffff; --surface-2: #f4f1ea; --text: #1d2230; --muted: #676d7a; --border: #e8e3d8;
+  --accent: #efcd66; --accent-hover: #e6c04f; --on-accent: #1f2a44; --accent-strong: #2b4170; --accent-soft: #fbf2d3;
+  --mark: #d6ac36; --navy: #1f2a44;
   --ok: #2f7a4f; --ok-soft: #e3f1e8; --warn: #a1561a; --warn-soft: #fbeadb; --info: #2d5b9a; --info-soft: #e3ecf8;
   --danger: #a23b3b; --danger-soft: #f8e1e1;
   --radius: 12px; --shadow: 0 1px 2px rgba(20,20,30,.04), 0 2px 10px rgba(20,20,30,.04);
@@ -12,14 +13,14 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #14161c; --surface: #1c1f27; --surface-2: #252935; --text: #ebe8e1; --muted: #a2a6b2; --border: #2f3442;
-    --accent: #d4a54f; --accent-strong: #e2b864; --accent-soft: #3a3020; --navy: #d9dde8;
+    --accent: #e9c869; --accent-hover: #f0d482; --on-accent: #1d2230; --accent-strong: #ecd07e; --accent-soft: #3a331f; --mark: #e9c869; --navy: #d9dde8;
     --ok: #6cc28f; --ok-soft: #1e3427; --warn: #e8a066; --warn-soft: #3b2a1c; --info: #86aee6; --info-soft: #1d2a3d;
     --danger: #e48a8a; --danger-soft: #3d2222; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #14161c; --surface: #1c1f27; --surface-2: #252935; --text: #ebe8e1; --muted: #a2a6b2; --border: #2f3442;
-  --accent: #d4a54f; --accent-strong: #e2b864; --accent-soft: #3a3020; --navy: #d9dde8;
+  --accent: #e9c869; --accent-hover: #f0d482; --on-accent: #1d2230; --accent-strong: #ecd07e; --accent-soft: #3a331f; --mark: #e9c869; --navy: #d9dde8;
   --ok: #6cc28f; --ok-soft: #1e3427; --warn: #e8a066; --warn-soft: #3b2a1c; --info: #86aee6; --info-soft: #1d2a3d;
   --danger: #e48a8a; --danger-soft: #3d2222; color-scheme: dark;
 }
@@ -46,22 +47,22 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 10px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--text); }
 .brand:hover { text-decoration: none; }
-.brand-mark { color: var(--accent); display: grid; place-items: center; }
+.brand-mark { color: var(--mark); display: grid; place-items: center; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.05; }
 .brand-name { font-family: var(--serif); font-size: 1.35rem; font-weight: 600; }
 .brand-sub { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
 .mainnav { display: flex; gap: 2px; margin-left: 12px; flex: 1; overflow-x: auto; }
 .mainnav a { padding: 8px 14px; border-radius: 999px; color: var(--muted); font-weight: 500; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
 .mainnav a:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
-.mainnav a.active { background: var(--accent-soft); color: var(--accent-strong); }
+.mainnav a.active { background: var(--accent-soft); color: var(--navy); }
 .count { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; background: var(--warn); color: #fff; font-size: 11px; font-weight: 600; margin-left: 4px; vertical-align: middle; font-family: var(--font); }
 
 main { max-width: 1080px; margin: 0 auto; padding: 24px 24px 80px; outline: none; }
 .narrow { max-width: 760px; margin: 0 auto; }
 
 /* primitives */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: var(--accent); color: #fff; font-weight: 500; cursor: pointer; white-space: nowrap; }
-.btn:hover { background: var(--accent-strong); text-decoration: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px; border-radius: 8px; border: 1px solid transparent; background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: pointer; white-space: nowrap; }
+.btn:hover { background: var(--accent-hover); text-decoration: none; }
 .btn:disabled { opacity: .45; cursor: not-allowed; }
 .btn-ghost { background: transparent; color: var(--text); border-color: var(--border); }
 .btn-ghost:hover { background: var(--surface-2); }
@@ -112,7 +113,7 @@ tr.click:hover td { background: var(--surface-2); }
 .progress > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .4s; }
 .big-bar { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
 .big-bar .progress { height: 12px; }
-.big-bar .pct { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; color: var(--accent-strong); line-height: 1; min-width: 64px; text-align: right; }
+.big-bar .pct { font-family: var(--serif); font-size: 1.8rem; font-weight: 600; color: var(--navy); line-height: 1; min-width: 64px; text-align: right; }
 .big-bar .small-pct { font-size: 1.1rem; }
 .cell-pct { min-width: 100px; }
 .cell-pct .progress { height: 5px; margin-top: 5px; }
@@ -123,7 +124,7 @@ tr.click:hover td { background: var(--surface-2); }
 .list-row:first-child, summary + .list-row { border-top: 0; }
 a.list-row:hover { background: var(--surface-2); text-decoration: none; }
 .list-row .sub { display: block; font-size: 13px; color: var(--muted); font-weight: 400; }
-.row-ico { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--accent-soft); color: var(--accent-strong); font-size: 13px; font-weight: 700; }
+.row-ico { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--accent-soft); color: var(--navy); font-size: 13px; font-weight: 700; }
 .row-ico.warn { background: var(--warn-soft); color: var(--warn); }
 .row-ico.ok { background: var(--ok-soft); color: var(--ok); }
 .row-ico.plain { background: var(--surface-2); font-size: 16px; border-radius: 8px; }

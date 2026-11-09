@@ -99,7 +99,7 @@
   function suggestModal(prefill = '', type = 'question') {
     const me = S.me();
     openModal(`
-      <h2 id="modalTitle">Ask L&amp;D</h2>
+      <h2 id="modalTitle">Submit a request</h2>
       <div class="field"><label for="sType">What is it?</label>
         <select id="sType">
           <option value="question" ${type === 'question' ? 'selected' : ''}>A question</option>
@@ -320,7 +320,7 @@
       }).filter(Boolean).sort((a, b) => b.score - a.score);
       res.innerHTML = hits.length
         ? `<div class="card list">${hits.map((h) => fileRow(h.d, h.snippet)).join('')}</div>`
-        : `<div class="card empty">No results. <button class="link-btn" id="noResSuggest" type="button">Ask L&amp;D</button></div>`;
+        : `<div class="card empty">No results. <button class="link-btn" id="noResSuggest" type="button">Request this document</button></div>`;
       const nr = $('#noResSuggest'); if (nr) nr.addEventListener('click', () => suggestModal('I searched for "' + knowQuery + '" and couldn\'t find anything.', 'request'));
     };
     input.addEventListener('input', run);
