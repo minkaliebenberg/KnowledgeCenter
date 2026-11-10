@@ -104,6 +104,7 @@
           <option value="question" ${type === 'question' ? 'selected' : ''}>A question</option>
           <option value="topic" ${type === 'topic' ? 'selected' : ''}>A topic idea</option>
           <option value="request" ${type === 'request' ? 'selected' : ''}>New or updated document</option>
+          <option value="problem" ${type === 'problem' ? 'selected' : ''}>Report a problem</option>
           ${me.sme ? '<option value="content">Content to submit (SME)</option>' : ''}
         </select></div>
       <div class="field"><label for="sText">Details</label><textarea id="sText">${esc(prefill)}</textarea></div>
@@ -636,7 +637,7 @@
   const prioClass = { High: 'danger', Med: 'warn', Low: '' };
   function viewRoadmap() {
     const reqs = S.state.submissions.filter((s) => s.status === 'new');
-    const typeLabel = { question: 'Question', topic: 'Topic idea', request: 'Doc request', content: 'SME content' };
+    const typeLabel = { question: 'Question', topic: 'Topic idea', request: 'Doc request', problem: 'Problem', content: 'SME content' };
     return manageTabs('roadmap') + `
       <div class="board">
         <div class="col requests"><div class="col-head">Requests <span class="count">${reqs.length}</span></div>
