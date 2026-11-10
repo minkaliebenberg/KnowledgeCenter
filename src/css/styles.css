@@ -1,9 +1,9 @@
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
-/* Palette: "Navy and Gold" — Deep Navy #0A1A40, Navy #1A3070, Pale Gold #E8C870; muted gold #BF9F55 and a lighter cream #FBF8F1 */
+/* Palette: "Navy and Gold" — Deep Navy #0A1A40, Navy #1A3070, Pale Gold #E8C870; antique gold #C5A04C and a lighter cream #FBF8F1 */
 :root {
   --bg: #fbf8f1; --surface: #fffdf9; --surface-2: #f3eee3; --text: #0a1a40; --muted: #5d6680; --border: #e7e0cf;
-  --accent: #bf9f55; --accent-hover: #ae8f48; --on-accent: #0a1a40; --accent-strong: #1a3070; --accent-soft: #f1e9d4;
+  --accent: #c5a04c; --accent-hover: #b39041; --on-accent: #0a1a40; --accent-strong: #1a3070; --accent-soft: #f3e8cf;
   --mark: #e8c870; --navy: #0a1a40; --slate: #1a3070; --cream: #f8f0dc;
   --header-bg: #0a1a40; --header-text: #f8f0dc; --header-muted: #b3b9cc; --header-hover: rgba(248,240,220,.08); --demo-bg: #1a3070;
   --ok: #4e7a5e; --ok-soft: #e6ece0; --warn: #8f6a2c; --warn-soft: #f3ead6; --info: #1a3070; --info-soft: #e3e7f1;
