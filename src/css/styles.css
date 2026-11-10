@@ -1,12 +1,12 @@
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
-/* Palette: "Ivory, Ink & Champagne" — Off-white #F6F5F2, Paper #FBF9F4, Stone #E3E1DC, Warm grey #74726E,
+/* Palette: "Ivory, Ink & Champagne" — Off-white #F6F5F2, Paper #FAF7F0, Stone #E3E1DC, Warm grey #74726E,
    Navy ink #29324A, Champagne gold #B89B5E (used sparingly) */
 :root {
-  --bg: #f6f5f2; --surface: #fbf9f4; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
+  --bg: #f6f5f2; --surface: #faf7f0; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
   --accent: #29324a; --accent-hover: #3b4562; --on-accent: #f6f5f2; --accent-strong: #29324a; --accent-soft: #eeebe4;
   --gold: #b89b5e; --mark: #b89b5e; --navy: #29324a; --slate: #29324a; --cream: #f6f5f2;
-  --header-bg: #fbf9f4; --header-text: #29324a; --header-muted: #74726e; --header-hover: #efeeea; --demo-bg: #29324a; --demo-text: #e9e2d4;
+  --header-bg: #faf7f0; --header-text: #29324a; --header-muted: #74726e; --header-hover: #efeeea; --demo-bg: #29324a; --demo-text: #e9e2d4;
   --ok: #5c6f5a; --ok-soft: #e9ece3; --warn: #8a6f3c; --warn-soft: #f2eadb; --info: #4d5566; --info-soft: #ebebec;
   --danger: #8f4a44; --danger-soft: #f3e4e0;
   --radius: 10px; --shadow: 0 1px 2px rgba(31,36,48,.03), 0 4px 18px rgba(31,36,48,.04);
