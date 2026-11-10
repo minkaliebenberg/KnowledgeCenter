@@ -77,8 +77,7 @@
   /* ---------- chrome ---------- */
   function renderChrome(route) {
     const me = S.me();
-    const todo = S.todo(me).length;
-    const items = [['learn', 'Learn', todo ? `<span class="count">${todo}</span>` : ''], ['know', 'Know', ''], ['ask', 'Ask', '']];
+    const items = [['learn', 'Learn', ''], ['know', 'Know', ''], ['ask', 'Ask', '']];
     if (S.canSeeTeam(me)) items.push(['team', 'My Team', '']);
     if (S.isAdmin(me)) items.push(['manage', 'Manage', '']);
     $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra}</a>`).join('');

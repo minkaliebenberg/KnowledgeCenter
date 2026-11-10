@@ -1,32 +1,17 @@
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
-/* Palette: "Navy and Gold" — Deep Navy #0A1A40, Navy #1A3070, Pale Gold #E8C870; antique gold #C9A048 and a lighter cream #FBF8F1 */
+/* Palette: "Ivory, Ink & Champagne" — Off-white #F6F5F2, Paper #FCFCFA, Stone #E3E1DC, Warm grey #74726E,
+   Navy ink #29324A, Champagne gold #B89B5E (used sparingly) */
 :root {
-  --bg: #fbf8f1; --surface: #fffdf9; --surface-2: #f3eee3; --text: #0a1a40; --muted: #5d6680; --border: #e7e0cf;
-  --accent: #c9a048; --accent-hover: #b78f3d; --on-accent: #0a1a40; --accent-strong: #1a3070; --accent-soft: #f4e8cc;
-  --mark: #e8c870; --navy: #0a1a40; --slate: #1a3070; --cream: #f8f0dc;
-  --header-bg: #0a1a40; --header-text: #f8f0dc; --header-muted: #b3b9cc; --header-hover: rgba(248,240,220,.08); --demo-bg: #1a3070;
-  --ok: #4e7a5e; --ok-soft: #e6ece0; --warn: #8f6a2c; --warn-soft: #f3ead6; --info: #1a3070; --info-soft: #e3e7f1;
-  --danger: #9a4a48; --danger-soft: #f3dfd6;
-  --radius: 12px; --shadow: 0 1px 2px rgba(10,26,64,.05), 0 2px 12px rgba(10,26,64,.06);
+  --bg: #f6f5f2; --surface: #fcfcfa; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
+  --accent: #29324a; --accent-hover: #3b4562; --on-accent: #f6f5f2; --accent-strong: #29324a; --accent-soft: #eeebe4;
+  --gold: #b89b5e; --mark: #b89b5e; --navy: #29324a; --slate: #29324a; --cream: #f6f5f2;
+  --header-bg: #fcfcfa; --header-text: #29324a; --header-muted: #74726e; --header-hover: #efeeea; --demo-bg: #29324a; --demo-text: #e9e2d4;
+  --ok: #5c6f5a; --ok-soft: #e9ece3; --warn: #8a6f3c; --warn-soft: #f2eadb; --info: #4d5566; --info-soft: #ebebec;
+  --danger: #8f4a44; --danger-soft: #f3e4e0;
+  --radius: 10px; --shadow: 0 1px 2px rgba(31,36,48,.03), 0 4px 18px rgba(31,36,48,.04);
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif; --serif: 'Cormorant Garamond', Georgia, serif;
   color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0a1a40; --surface: #10234f; --surface-2: #1a3070; --text: #f8f0dc; --muted: #b3b9cc; --border: #26407f;
-    --accent: #e8c870; --accent-hover: #f0d68c; --on-accent: #0a1a40; --accent-strong: #e8c870; --accent-soft: #2a3358; --mark: #e8c870; --navy: #f8f0dc; --slate: #2c4a9a;
-    --header-bg: #071230; --header-text: #f8f0dc; --header-muted: #b3b9cc; --header-hover: rgba(248,240,220,.08); --demo-bg: #1a3070;
-    --ok: #9cc7a6; --ok-soft: #1c3a35; --warn: #e8c870; --warn-soft: #3a3423; --info: #b9c6ea; --info-soft: #1a3070;
-    --danger: #e8a39b; --danger-soft: #42263a; color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0a1a40; --surface: #10234f; --surface-2: #1a3070; --text: #f8f0dc; --muted: #b3b9cc; --border: #26407f;
-  --accent: #e8c870; --accent-hover: #f0d68c; --on-accent: #0a1a40; --accent-strong: #e8c870; --accent-soft: #2a3358; --mark: #e8c870; --navy: #f8f0dc; --slate: #2c4a9a;
-  --header-bg: #071230; --header-text: #f8f0dc; --header-muted: #b3b9cc; --header-hover: rgba(248,240,220,.08); --demo-bg: #1a3070;
-  --ok: #9cc7a6; --ok-soft: #1c3a35; --warn: #e8c870; --warn-soft: #3a3423; --info: #b9c6ea; --info-soft: #1a3070;
-  --danger: #e8a39b; --danger-soft: #42263a; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -43,9 +28,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* demo bar + header */
-.demo-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 5px 16px; background: var(--demo-bg); color: var(--header-text); font-size: 12px; }
-.demo-bar select { width: auto; max-width: 100%; background: #f8f0dc; color: #0a1a40; border: 0; border-radius: 6px; padding: 2px 6px; font-size: 12px; }
-.demo-bar .link-btn { color: var(--header-text); font-size: 12px; }
+.demo-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 5px 16px; background: var(--demo-bg); color: var(--demo-text); font-size: 12px; }
+.demo-bar select { width: auto; max-width: 100%; background: #f6f5f2; color: #29324a; border: 0; border-radius: 6px; padding: 2px 6px; font-size: 12px; }
+.demo-bar .link-btn { color: var(--demo-text); font-size: 12px; }
 .link-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent-strong); }
 .link-btn:hover { text-decoration: underline; }
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: var(--header-bg); border-bottom: 1px solid rgba(232,200,112,.35); }
@@ -247,3 +232,28 @@ button.kcard:hover { border-color: var(--accent); }
   .msg { max-width: 92%; }
   .toolbar input { max-width: none; }
 }
+
+/* ---- Quiet luxury: restraint. Gold only as hairlines and small details. ---- */
+.topbar { border-bottom: 1px solid rgba(184,155,94,.55); padding: 14px 24px; }
+.brand-sub { color: var(--muted); letter-spacing: .24em; }
+.brand-name { font-weight: 500; letter-spacing: .02em; }
+.mainnav a { border-radius: 0; padding: 8px 4px; margin: 0 12px; color: var(--muted); }
+.mainnav a:hover { background: transparent; color: var(--text); }
+.mainnav a.active { background: transparent; color: var(--text); box-shadow: inset 0 -1.5px 0 var(--gold); }
+.topbar .btn-ghost { color: var(--text); border-color: var(--border); }
+.topbar .btn-ghost:hover { background: var(--surface-2); }
+.count { background: transparent; color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); font-weight: 500; }
+h1 { font-weight: 500; letter-spacing: .01em; }
+.btn { font-weight: 500; letter-spacing: .02em; border-radius: 6px; }
+.progress { height: 4px; }
+.big-bar .progress { height: 5px; }
+.progress > span { background: var(--gold); }
+.big-bar .pct { font-weight: 500; }
+.row-ico { background: transparent; box-shadow: inset 0 0 0 1px var(--border); color: var(--muted); font-weight: 500; }
+.row-ico.warn { background: transparent; color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.card { box-shadow: none; }
+.tile:hover, button.kcard:hover { border-color: var(--gold); }
+.msg.user { background: var(--text); color: var(--cream); }
+.search-big input { box-shadow: none; }
+.chat-input input:focus, input:focus, textarea:focus { outline: none; border-color: var(--gold); }
+.tile-ico, .row-ico.plain { filter: grayscale(1) opacity(.55); }
