@@ -8,13 +8,14 @@ A clickable proof of concept for a **Knowledge Center** in the CrownRing interna
 
 Use the **"viewing as"** dropdown in the dark bar to switch between people and roles. **Reset demo** restores the starting data.
 
-## The five areas
+## The areas
 
 | Area | Who sees it | What it does |
 |---|---|---|
 | **Learn** | Everyone | One progress bar and an ordered **To do** list: process updates first, then onboarding, department and ongoing modules. Completed items stay open for review. |
-| **Know** | Everyone, filtered by department | Search bar plus the same folders as SharePoint (Policies & Procedures, Reference Materials, Guidebooks, Sales Training Guides, CES). Shows current versions only. |
-| **Ask** | Everyone | AI assistant (**simulated**). It answers only from current documents, links the source, and says so when it can't find an answer. |
+| **Refer** | Everyone, filtered by department | Search bar plus the same folders as SharePoint (Policies & Procedures, Reference Materials, Guidebooks, Sales Training Guides, CES). Shows current versions only. |
+| **Navigate** | Everyone, filtered by department | How-to guides for the systems we use (Zoho Desk, DesignBuddy). A landing page of systems; each system has Start here, guide sections and an FAQ. Reference only, with no tracking. |
+| **Ask** | Everyone | AI assistant (**simulated**). It answers only from current documents and how-to guides, links the source, and says so when it can't find an answer. |
 | **My Team** | Supervisors (their team), L&D (everyone) | Onboarding, department training and outstanding update acknowledgements per person. |
 | **Manage** | L&D only | **Register** (every document with version, status, owner and next review, like the Documentation Map) and **Roadmap** (employee requests → ideas → planned → in progress → under review → completed). Each document page holds its version history (the archive), change log, acknowledgement tracking and links. |
 

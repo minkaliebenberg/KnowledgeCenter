@@ -269,6 +269,34 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .chat-input input:focus, input:focus, textarea:focus { outline: none; border-color: var(--gold); }
 .tile-ico, .row-ico.plain { filter: grayscale(1) opacity(.55); }
 
+/* ---- Navigate: systems & how-to guides ---- */
+.sys-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px; margin-top: 8px; }
+.sys-card { display: flex; align-items: center; gap: 18px; padding: 22px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); transition: border-color .15s; }
+.sys-card:hover { border-color: var(--gold); text-decoration: none; }
+.sys-card .sub { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+.sys-card .count-line { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; margin-top: 8px; }
+.sys-card .arrow { color: var(--gold); font-size: 18px; }
+.mono { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--gold); color: var(--gold); font-family: var(--serif); font-size: 1.15rem; font-weight: 600; letter-spacing: .02em; }
+.mono.lg { width: 64px; height: 64px; font-size: 1.5rem; }
+.sys-head { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin: 10px 0 8px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+.sys-head h1 { margin: 0 0 2px; }
+.lead { font-size: 16px; color: var(--muted); margin-bottom: 10px; }
+.row-ico.num { background: transparent; box-shadow: inset 0 0 0 1px var(--gold); color: var(--gold); }
+.row-ico.plain-g { background: transparent; box-shadow: inset 0 0 0 1px var(--border); color: var(--muted); font-size: 12px; }
+.faq details { padding: 14px 18px; border-top: 1px solid var(--border); }
+.faq details:first-child { border-top: 0; }
+.faq summary { color: var(--text); font-weight: 500; }
+.faq details p { margin: 8px 0 0; color: var(--muted); }
+.video-ph { aspect-ratio: 16 / 9; background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); display: grid; place-items: center; align-content: center; gap: 8px; color: var(--muted); margin: 16px 0 22px; }
+.video-ph .play { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--gold); color: var(--gold); font-size: 20px; padding-left: 4px; }
+.steps { padding-left: 1.4em; margin: 0 0 1em; }
+.steps li { margin-bottom: .55em; padding-left: .2em; }
+.steps li::marker { color: var(--gold); font-weight: 600; }
+.small-steps { margin: 0 0 .4em; }
+.tip { border-left: 2px solid var(--gold); padding: 6px 0 6px 14px; margin: 18px 0; }
+.tip p { margin: 4px 0 0; color: var(--muted); }
+@media (max-width: 760px) { .sys-head .btn { width: 100%; } .sys-grid { grid-template-columns: 1fr; } }
+
 </style>
 </head>
 <body>
@@ -678,6 +706,96 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       { id: 'R11', title: 'NC Finished Prong Tolerances - Center Stones', status: 'done', priority: 'Med', work: 'Update Existing', effort: 'Minor', type: 'Quick Reference', docId: 'D24' },
     ],
   };
+
+  /* ---------------------------------------------------------------------------
+     NAVIGATE — how-to guides for the systems we use. Pure reference: no
+     completion tracking. Each guide is one task ("How to…"). Guides are
+     searchable by Ask, and documents in Refer can link to them.
+     ALL GUIDE TEXT IS PLACEHOLDER.
+  --------------------------------------------------------------------------- */
+  const g = (id, title, steps, o) => Object.assign({ id, title, steps, video: null, tip: '', related: [], docs: [] }, o || {});
+  window.SEED.systems = [
+    { id: 'zoho', name: 'Zoho Desk', mono: 'Z', depts: ['NC', 'CS'], owner: 'u5', url: 'https://www.zoho.com/desk/',
+      tagline: 'Our helpdesk for every retailer email, call and request.',
+      when: 'Any time a retailer contacts us. Every request becomes a ticket so nothing gets lost and anyone on the team can pick it up.',
+      startHere: ['z1', 'z2', 'z5', 'z8', 'z10', 'z15'],
+      sections: [
+        { title: 'Helpdesk basics', guides: ['z1', 'z2', 'z3', 'z4'] },
+        { title: 'Getting set up', guides: ['z5', 'z6', 'z7'] },
+        { title: 'A ticket from start to finish', guides: ['z8', 'z9', 'z10', 'z11', 'z12', 'z13', 'z14', 'z15'] },
+        { title: 'Special situations', guides: ['z16', 'z17', 'z18', 'z19'] },
+        { title: 'Working smarter', guides: ['z20', 'z21'] },
+      ],
+      faq: [
+        { q: 'A retailer replied to a closed ticket. What happens?', a: 'Their reply reopens the ticket automatically and it goes back to the owner. Placeholder answer.' },
+        { q: 'Two people replied to the same ticket at the same time. How do I avoid that?', a: 'Check the agent collision indicator at the top of the ticket before replying. Placeholder answer.' },
+        { q: 'Should I reply from Outlook instead?', a: 'No. Always reply from Zoho Desk so the conversation stays on the ticket. Placeholder answer.' },
+      ],
+      guides: [
+        g('z1', 'What is a ticket?', ['A ticket is one request from one retailer, with the whole conversation attached.', 'Every email, call or chat becomes a ticket.', 'Tickets have an owner, a status and a due date, so nothing falls through the cracks.'], { video: '2 min', related: ['z2', 'z3'] }),
+        g('z2', 'The life of a ticket', ['**New** — the request has arrived and no one owns it yet.', '**Open** — someone owns it and is working on it.', '**On Hold** — waiting on the retailer or another department.', '**Closed** — the retailer has their answer.'], { video: '2 min', related: ['z13', 'z15'] }),
+        g('z3', 'Key terms', ['**Contact** — the person who wrote to us.', '**Account** — the retailer (store) they belong to.', '**Owner** — the person responsible for the ticket.', '**Reply** vs **internal comment** — replies go to the retailer, comments stay inside the team.'], { related: ['z1'] }),
+        g('z4', 'How our team uses Zoho Desk', ['Every retailer request gets a ticket.', 'Take ownership before you reply.', 'Use approved wording from Templates & Disclaimers.', 'Close the ticket once the retailer has their answer.'], { docs: ['D11', 'D10'], tip: 'These are our team rules, not Zoho settings. The full procedure is in Refer.' }),
+        g('z5', 'How to log in and find your way around', ['Open Zoho Desk and sign in with your work account.', 'The left bar switches between Tickets, Contacts and Accounts.', 'The top bar holds search and your department switcher.'], { video: '3 min', related: ['z6', 'z8'] }),
+        g('z6', 'How to set up your email signature', ['Click your profile picture, then **Personal settings**.', 'Open **Signature** and paste the approved signature.', 'Save, then send yourself a test reply.'], { video: '1 min', docs: ['D10'] }),
+        g('z7', 'How to manage your notifications', ['Open **Personal settings → Notifications**.', 'Turn on alerts for tickets assigned to you.', 'Turn off alerts you do not need.'], { video: '1 min' }),
+        g('z8', 'How to find your tickets', ['Use the view menu to switch to **My Open Tickets**.', 'Filter by status or priority.', 'Use the search bar for a PO number, retailer or contact name.'], { video: '3 min', related: ['z20'], tip: 'Search by PO number is the fastest way to find a specific order.' }),
+        g('z9', 'How to take ownership of a ticket', ['Open the ticket.', 'Set **Owner** to yourself.', 'The ticket now shows in your views and nobody else will pick it up.'], { video: '1 min' }),
+        g('z10', 'How to reply to a retailer', ['Open the ticket and click **Reply**.', 'Write your answer, or start from a template.', 'Check the To and CC fields, then **Send**.'], { video: '2 min', related: ['z11', 'z12'], docs: ['D10'] }),
+        g('z11', 'How to use templates (macros)', ['Open the ticket.', 'Click **Apply Macro** at the bottom.', 'Pick the template, review the text and send.'], { video: '2 min', docs: ['D10'] }),
+        g('z12', 'How to add an internal comment', ['Click **Comment** instead of Reply.', 'Mention a colleague with @ to notify them.', 'Comments are never sent to the retailer.'], { video: '1 min' }),
+        g('z13', 'How to update status and priority', ['Use the fields on the left of the ticket.', 'Set **On Hold** while you wait on someone else.', 'Raise the priority for rush or urgent requests.'], { video: '1 min', docs: ['D38'] }),
+        g('z14', 'How to transfer a ticket to another department', ['Open the ticket.', 'Change the **Department** field.', 'Add an internal comment explaining why.'], { video: '1 min' }),
+        g('z15', 'How to close or reopen a ticket', ['Set the status to **Closed** once the retailer has their answer.', 'To reopen, change the status back to **Open**.'], { video: '1 min', related: ['z2'] }),
+        g('z16', 'How to log a phone call', ['Click **New ticket**.', 'Choose **Phone** as the channel.', 'Summarise the call and assign it.'], { video: '2 min' }),
+        g('z17', 'How to merge duplicate tickets', ['Select both tickets in the list.', 'Click **Merge** and choose which one to keep.', 'The conversations are combined into one ticket.'], { video: '1 min' }),
+        g('z18', 'How to handle spam and misdirected emails', ['Mark obvious spam as **Spam**.', 'Transfer misdirected emails to the right department.'], {}),
+        g('z19', 'How to cover for a colleague', ['Filter by their name as owner.', 'Reassign urgent tickets to yourself.', 'Leave an internal comment so they know when they return.'], {}),
+        g('z20', 'How to save a custom view', ['Set up the filters you use most.', 'Click **Save as view** and name it.'], { video: '1 min' }),
+        g('z21', 'Keyboard shortcuts', ['Placeholder: the most useful shortcuts for replying, commenting and moving between tickets.'], {}),
+      ] },
+
+    { id: 'designbuddy', name: 'DesignBuddy', mono: 'DB', depts: ['NC'], owner: null, ownerLabel: 'DesignBuddy creator (management)', url: 'https://ludovickninja.github.io/DesignBuddyDesktop/',
+      tagline: 'Our in-house toolkit for quoting custom projects.',
+      when: 'When quoting custom work: stone counts, metal weights, conversions, and the forms that go with a custom request.',
+      startHere: ['d0', 'd1', 'd4', 'd11'],
+      sections: [
+        { title: 'Getting started', guides: ['d0'] },
+        { title: 'Stone Counts', guides: ['d1', 'd2', 'd3'] },
+        { title: 'Weights', guides: ['d4', 'd5', 'd6', 'd7'] },
+        { title: 'Informations', guides: ['d8', 'd9', 'd10'] },
+        { title: 'Forms', guides: ['d11', 'd12', 'd13'] },
+        { title: 'GPTs', guides: ['d14'] },
+        { title: 'Tools (beta)', guides: ['d15', 'd16'] },
+      ],
+      faq: [
+        { q: 'Is the stone count exact?', a: 'It is an estimate to help quote. Final counts are confirmed in CAD. Placeholder answer.' },
+        { q: 'Can I use it in French?', a: 'Yes — switch the language in the sidebar.' },
+      ],
+      guides: [
+        g('d0', 'What is DesignBuddy?', ['A set of calculators and forms built to speed up custom quoting.', 'Use the sidebar to move between Stone Counts, Weights, Informations, Forms, GPTs and Tools.'], { video: '2 min' }),
+        g('d1', 'Stone Count: Full Eternity', ['Choose the coverage: **Full**, **Three Quarter** or **Semi**.', 'Select the finger size region (e.g. US).', 'Enter the finger size, band thickness and spacing between stones (default 0.2 mm).', 'Enter the melee diameter.', 'Read **Total Stones Needed**.'], { video: '3 min', docs: ['D26', 'D27'], tip: 'Use it for an estimate while quoting; CAD confirms the final count.' }),
+        g('d2', 'Stone Count: Halos', ['Placeholder: choose the center stone shape and size, then the melee size, to estimate the halo stone count.'], { video: '3 min', docs: ['D27'] }),
+        g('d3', 'Stone Count: Hidden Halos', ['Placeholder: same as Halos, for hidden halo designs.'], { video: '2 min' }),
+        g('d4', 'Weight: Karat Conversion', ['Placeholder: convert a known weight from one karat or metal to another.'], { video: '2 min', docs: ['D29'] }),
+        g('d5', 'Weight: Wedding Band', ['Placeholder: estimate band weight from profile, width, thickness and size.'], { video: '2 min', docs: ['D26'] }),
+        g('d6', 'Weight: Width Conversion', ['Placeholder: estimate how weight changes when the band width changes.'], { video: '2 min' }),
+        g('d7', 'Weight: Diamond Sizes', ['Placeholder: look up diamond size to carat weight.'], { video: '2 min', docs: ['D25'] }),
+        g('d8', 'Useful Links & FAQ', ['Placeholder: what you will find in Useful Links and the built-in FAQ.'], {}),
+        g('d9', 'Jewelry News Feed', ['Placeholder: industry news, and how it can help in conversations with retailers.'], {}),
+        g('d10', 'Contact Repository', ['Placeholder: where to find supplier and partner contacts.'], { docs: ['D17'] }),
+        g('d11', 'Rush Requests form', ['Placeholder: when to submit a rush request and what happens after you submit it.'], { docs: ['D38'] }),
+        g('d12', 'Stone Order Form', ['Placeholder: when to order stones and the details you need first.'], {}),
+        g('d13', 'Employee Suggestions form', ['Placeholder: share ideas to improve DesignBuddy.'], {}),
+        g('d14', 'Design Buddy Chat (GPT)', ['Placeholder: what to ask it, its limits, and when to double-check its answer.'], { tip: 'Always confirm pricing and policy answers against the documents in Refer.' }),
+        g('d15', 'Style Match (work in progress)', ['Placeholder: beta tool — what it does today.'], {}),
+        g('d16', '3DM to GLB', ['Placeholder: convert a CAD file so it can be viewed in a browser.'], {}),
+      ] },
+  ];
+
+  /* Documents in Refer that link out to how-to guides */
+  const docGuides = { D11: ['zoho:z4', 'zoho:z8'], D10: ['zoho:z11'], D38: ['designbuddy:d11'], D26: ['designbuddy:d5'], D27: ['designbuddy:d1'] };
+  window.SEED.documents.forEach((d) => { d.guides = docGuides[d.id] || []; });
 })();
 
 </script>
@@ -689,7 +807,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v2';
+  const KEY = 'crownring-kc-demo-v3';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -835,6 +953,13 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     save();
   };
 
+
+  /* ---------- NAVIGATE: systems & how-to guides (reference only, no tracking) ---------- */
+  S.systems = (u) => (state.systems || []).filter((x) => S.isAdmin(u) || appliesTo(x.depts, u));
+  S.system = (id) => (state.systems || []).find((x) => x.id === id);
+  S.guide = (sysId, gid) => { const x = S.system(sysId); return x && x.guides.find((g) => g.id === gid); };
+  S.guideRef = (ref) => { const [sid, gid] = ref.split(':'); return { sys: S.system(sid), g: S.guide(sid, gid) }; };
+
   /* ---------- ASK: simulated retrieval over CURRENT, ACTIVE docs only ---------- */
   const STOP = new Set('a an the is are was were be to of and or in on for with what how do does i we our my me can when who where which should if it this that at by from any about need you have get as there their they them your'.split(' '));
   const stem = (w) => w.replace(/(ing|ed|es|s)$/, '');
@@ -861,6 +986,17 @@ h1 { font-weight: 500; letter-spacing: .01em; }
         hits.push({ d, v, s, idx, score: score * coverage, coverage });
       });
     });
+    // How-to guides from Navigate are searchable too
+    S.systems(u).forEach((sys) => sys.guides.forEach((g) => {
+      const body = g.steps.join(' ');
+      if (/^Placeholder/.test(body)) return;
+      const titleT = tokens(g.title + ' ' + sys.name);
+      const bodyT = tokens(body + ' ' + g.tip);
+      let score = 0;
+      q.forEach((w) => { if (titleT.includes(w)) score += 2; if (bodyT.includes(w)) score += 1.5; });
+      const coverage = q.filter((w) => titleT.includes(w) || bodyT.includes(w)).length / q.length;
+      hits.push({ guide: g, sys, score: score * coverage, coverage });
+    }));
     hits.sort((a, b) => b.score - a.score);
     const top = hits[0];
     if (!top || top.score < 2.5 || top.coverage < 0.5) return { found: false };
@@ -876,7 +1012,8 @@ h1 { font-weight: 500; letter-spacing: .01em; }
    CrownRing Knowledge Center — prototype UI (plain JS, hash routing, no build)
    Routes:
      #/learn  #/learn/module/:id[/:step]  #/learn/update/:docId  #/learn/record
-     #/know   #/know/f/:folderId   #/know/doc/:id
+     #/refer   #/refer/f/:folderId   #/refer/doc/:id
+     #/navigate   #/navigate/:systemId   #/navigate/:systemId/:guideId
      #/ask
      #/team   #/team/:userId
      #/manage (register)  #/manage/doc/:id  #/manage/doc/:id/v/:ver  #/manage/edit/:id  #/manage/roadmap
@@ -951,7 +1088,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   /* ---------- chrome ---------- */
   function renderChrome(route) {
     const me = S.me();
-    const items = [['learn', 'Learn', ''], ['know', 'Know', ''], ['ask', 'Ask', '']];
+    const items = [['learn', 'Learn', ''], ['refer', 'Refer', ''], ['navigate', 'Navigate', ''], ['ask', 'Ask', '']];
     if (S.canSeeTeam(me)) items.push(['team', 'My Team', '']);
     if (S.isAdmin(me)) items.push(['manage', 'Manage', '']);
     $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra}</a>`).join('');
@@ -1043,7 +1180,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     return `<div class="narrow">${head}
       <article class="card">
         <h1>${esc(d.title)}</h1>
-        <p class="meta">v${esc(v.v)} · ${fmtDate(v.date)} · <a href="#/know/doc/${d.id}">Open in Know</a></p>
+        <p class="meta">v${esc(v.v)} · ${fmtDate(v.date)} · <a href="#/refer/doc/${d.id}">Open in Refer</a></p>
         <div class="doc-body">${docBody(v)}</div>
       </article>
       <div class="row spread nav-btns">
@@ -1061,7 +1198,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
           if (st.submitted) { if (oi === q.a) cls = 'correct'; else if (st.picks[qi] === oi) cls = 'wrong'; }
           return `<label class="opt ${cls}"><input type="radio" name="q${qi}" value="${oi}" ${st.picks[qi] === oi ? 'checked' : ''} ${st.submitted ? 'disabled' : ''}> ${esc(o)}</label>`;
         }).join('')}
-        ${st.submitted && st.picks[qi] !== q.a ? `<p class="small">See <a href="#/know/doc/${q.docRef}">${esc(S.doc(q.docRef).title)}</a></p>` : ''}
+        ${st.submitted && st.picks[qi] !== q.a ? `<p class="small">See <a href="#/refer/doc/${q.docRef}">${esc(S.doc(q.docRef).title)}</a></p>` : ''}
       </div>`).join('');
     let result = '';
     if (st.submitted) {
@@ -1101,7 +1238,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
         <div><span class="badge warn">Update</span><h1>${esc(d.title)}</h1><p class="meta">v${esc(v.v)} · ${fmtDate(v.date)}</p></div>
         <div class="changes"><strong>What changed</strong><p>${esc(v.summary)}</p></div>
         ${prev ? `<details><summary>Show exact changes</summary><div class="doc-body diff">${sectionDiff(prev, v)}</div></details>` : ''}
-        <p><a href="#/know/doc/${d.id}">Open the full document</a></p>
+        <p><a href="#/refer/doc/${d.id}">Open the full document</a></p>
         ${done ? `<div class="result ok">✓ Acknowledged ${fmtDate(done.date)}</div>`
           : `<label class="opt"><input type="checkbox" id="ackBox"> I've read and understand these changes</label>
              <button class="btn" id="ackBtn" type="button" disabled>Acknowledge</button>`}
@@ -1141,7 +1278,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   let knowQuery = '';
   const fileRow = (d, snippet) => {
     const v = S.current(d);
-    return `<a class="list-row" href="#/know/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
+    return `<a class="list-row" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
       <span class="grow"><strong>${esc(d.title)}</strong><span class="sub">${snippet || esc(d.type)}</span></span>
       <span class="muted small nowrap">${fmtDate(v.date)}</span></a>`;
   };
@@ -1155,7 +1292,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       <div id="knowBrowse">
         <div class="tiles">${S.state.folders.map((f) => {
           const n = docs.filter((d) => d.folder === f.id).length;
-          return n ? `<a class="tile" href="#/know/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
+          return n ? `<a class="tile" href="#/refer/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
         }).join('')}</div>
         <h2 class="section-title">Recently updated</h2>
         <div class="card list">${recent.map((d) => fileRow(d)).join('')}</div>
@@ -1164,7 +1301,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   function viewFolder(fid) {
     const f = S.folder(fid); if (!f) return notFound();
     const docs = S.visibleDocs(S.me()).filter((d) => d.folder === fid).sort((a, b) => a.title.localeCompare(b.title));
-    return `<a href="#/know" class="small">← Know</a>
+    return `<a href="#/refer" class="small">← Refer</a>
       <h1>${f.icon} ${esc(f.name)}</h1>
       <div class="card list">${docs.map((d) => fileRow(d)).join('') || '<div class="empty">Nothing here for your team.</div>'}</div>`;
   }
@@ -1204,12 +1341,12 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   function viewDoc(id) {
     const me = S.me();
     const d = S.doc(id);
-    if (!d || !S.visibleDocs(me).includes(d)) return `<div class="card empty">This document isn't available. <a href="#/know">Back to Know</a></div>`;
+    if (!d || !S.visibleDocs(me).includes(d)) return `<div class="card empty">This document isn't available. <a href="#/refer">Back to Refer</a></div>`;
     const v = S.current(d);
     const f = S.folder(d.folder);
     const related = d.links.map(S.doc).filter((x) => x && S.visibleDocs(me).includes(x));
     const history = d.versions.filter((x) => x.status !== 'draft').slice().reverse();
-    return `<div class="narrow"><a href="#/know/f/${f.id}" class="small">← ${esc(f.name)}</a>
+    return `<div class="narrow"><a href="#/refer/f/${f.id}" class="small">← ${esc(f.name)}</a>
       <article class="card">
         <h1>${esc(d.title)}</h1>
         <p class="meta">${esc(d.type)} · v${esc(v.v)} · Updated ${fmtDate(v.date)}</p>
@@ -1219,7 +1356,8 @@ h1 { font-weight: 500; letter-spacing: .01em; }
           ${S.isAdmin(me) ? `<a class="btn btn-sm btn-ghost" href="#/manage/doc/${d.id}">Manage</a>` : ''}
         </div>
         <div class="doc-body">${docBody(v)}</div>
-        ${related.length ? `<h3 class="related-h">Related</h3><div class="pill-row">${related.map((r) => `<a class="chip" href="#/know/doc/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
+        ${(d.guides || []).length ? `<h3 class="related-h">How-to guides</h3><div class="pill-row">${d.guides.map(S.guideRef).filter((x) => x.g && S.systems(me).includes(x.sys)).map((x) => `<a class="chip" href="#/navigate/${x.sys.id}/${x.g.id}">↗ ${esc(x.g.title)}</a>`).join('')}</div>` : ''}
+        ${related.length ? `<h3 class="related-h">Related</h3><div class="pill-row">${related.map((r) => `<a class="chip" href="#/refer/doc/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
         <details class="history"><summary>Version history</summary>
           <ul>${history.map((x) => `<li><strong>v${esc(x.v)}</strong> · ${fmtDate(x.date)} — ${esc(x.summary)}</li>`).join('')}</ul></details>
       </article></div>`;
@@ -1228,16 +1366,74 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     const b = $('#docQuestion'); if (b) b.addEventListener('click', () => suggestModal('About "' + S.doc(id).title + '": ', 'question'));
   }
 
+
+  /* =========================================================================
+     NAVIGATE — how-to guides for the systems we use (reference only)
+     ========================================================================= */
+  function viewNavigate() {
+    const list = S.systems(S.me());
+    return `<div class="sys-grid">${list.map((x) => `<a class="sys-card" href="#/navigate/${x.id}">
+        <span class="mono">${esc(x.mono)}</span>
+        <span class="grow"><strong>${esc(x.name)}</strong><span class="sub">${esc(x.tagline)}</span><span class="sub count-line">${x.guides.length} guides</span></span>
+        <span class="arrow">→</span></a>`).join('') || '<div class="card empty">No systems for your team yet.</div>'}</div>`;
+  }
+  const guideRow = (x, gd, n) => `<a class="list-row" href="#/navigate/${x.id}/${gd.id}">
+      <span class="row-ico ${n ? 'num' : 'plain-g'}">${n || (gd.video ? '▶' : '≡')}</span>
+      <span class="grow"><strong>${esc(gd.title)}</strong>${gd.video ? `<span class="sub">Video · ${gd.video}</span>` : '<span class="sub">Written guide</span>'}</span></a>`;
+  function viewSystem(id) {
+    const x = S.system(id);
+    if (!x || !S.systems(S.me()).includes(x)) return notFound();
+    const G = (gid) => x.guides.find((g) => g.id === gid);
+    const owner = x.owner ? S.user(x.owner).name : x.ownerLabel;
+    return `<a href="#/navigate" class="small">← Navigate</a>
+      <div class="sys-head">
+        <span class="mono lg">${esc(x.mono)}</span>
+        <div class="grow"><h1>${esc(x.name)}</h1><p class="lead">${esc(x.tagline)}</p>
+          <p class="small muted"><strong>When to use it:</strong> ${esc(x.when)}<br><strong>Owner:</strong> ${esc(owner)}</p></div>
+        <a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Open ${esc(x.name)} ↗</a>
+      </div>
+      <h2 class="section-title">Start here</h2>
+      <div class="card list">${x.startHere.map((gid, i) => guideRow(x, G(gid), i + 1)).join('')}</div>
+      ${x.sections.map((sec) => `<h2 class="section-title">${esc(sec.title)}</h2><div class="card list">${sec.guides.map((gid) => guideRow(x, G(gid))).join('')}</div>`).join('')}
+      ${x.faq.length ? `<h2 class="section-title">FAQ</h2><div class="card list faq">${x.faq.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</div>` : ''}`;
+  }
+  function viewGuide(sid, gid) {
+    const x = S.system(sid); const gd = S.guide(sid, gid);
+    if (!x || !gd || !S.systems(S.me()).includes(x)) return notFound();
+    const order = x.sections.flatMap((s) => s.guides);
+    const i = order.indexOf(gid);
+    const sec = x.sections.find((s) => s.guides.includes(gid));
+    const next = order[i + 1] && x.guides.find((g) => g.id === order[i + 1]);
+    const prev = i > 0 && x.guides.find((g) => g.id === order[i - 1]);
+    const rel = gd.related.map((r) => x.guides.find((g) => g.id === r)).filter(Boolean);
+    const docs = gd.docs.map(S.doc).filter((d) => d && S.visibleDocs(S.me()).includes(d));
+    return `<div class="narrow"><a href="#/navigate/${x.id}" class="small">← ${esc(x.name)}</a>
+      <article class="card">
+        <p class="meta">${esc(x.name)} · ${esc(sec ? sec.title : '')}</p>
+        <h1>${esc(gd.title)}</h1>
+        ${gd.video ? `<div class="video-ph" role="img" aria-label="Video placeholder"><span class="play">▶</span><span class="small">Video · ${gd.video}</span></div>` : ''}
+        <ol class="steps">${gd.steps.map((st) => `<li>${md(st).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol>
+        ${gd.tip ? `<div class="tip"><strong>Good to know</strong><p>${esc(gd.tip)}</p></div>` : ''}
+        ${rel.length ? `<h3 class="related-h">Related guides</h3><div class="pill-row">${rel.map((r) => `<a class="chip" href="#/navigate/${x.id}/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
+        ${docs.length ? `<h3 class="related-h">In Refer</h3><div class="pill-row">${docs.map((d) => `<a class="chip" href="#/refer/doc/${d.id}">${esc(d.title)}</a>`).join('')}</div>` : ''}
+      </article>
+      <div class="row spread nav-btns">
+        ${prev ? `<a class="btn btn-ghost" href="#/navigate/${x.id}/${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}
+        ${next ? `<a class="btn btn-ghost" href="#/navigate/${x.id}/${next.id}">${esc(next.title)} →</a>` : ''}
+      </div></div>`;
+  }
+
   /* =========================================================================
      ASK (simulated)
      ========================================================================= */
   let askLog = [];
-  const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'What does the warranty cover?'];
+  const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'How do I merge tickets?'];
   function answerHtml(r) {
     if (!r.found) return `<p>I couldn't find that in our documents, so I won't guess.</p>
       <button class="btn btn-sm btn-ghost send-ld" type="button">Send question to L&amp;D</button>`;
     const t = r.top;
-    return `${md(t.s.body)}<p class="source">Source: <a href="#/know/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
+    if (t.guide) return `<ol class="steps small-steps">${t.guide.steps.map((x) => `<li>${md(x).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol><p class="source">Source: <a href="#/navigate/${t.sys.id}/${t.guide.id}">${esc(t.sys.name)} › ${esc(t.guide.title)}</a></p>`;
+    return `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
   }
   function viewAsk() {
     return `<div class="narrow ask">
@@ -1393,7 +1589,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     return `<a href="#/manage" class="small">← Register</a>
       <div class="row spread"><div><h1>${esc(d.title)}</h1><p class="meta">${statusBadge(d)} ${cur ? 'v' + esc(cur.v) + ' · ' : ''}${esc(S.folder(d.folder).name)} · ${esc(d.type)}</p></div>
         <div class="row">
-          ${d.status === 'active' ? `<a class="btn btn-ghost" href="#/know/doc/${d.id}">View</a>` : ''}
+          ${d.status === 'active' ? `<a class="btn btn-ghost" href="#/refer/doc/${d.id}">View</a>` : ''}
           ${d.status === 'retired' ? '<button class="btn btn-ghost" id="restoreDoc" type="button">Restore</button>' : `<a class="btn" href="#/manage/edit/${d.id}">${d.status === 'active' ? 'New version' : 'Edit & publish'}</a>`}
         </div></div>
       <div class="grid-main">
@@ -1421,7 +1617,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       </div>`;
   }
   function bindManageDoc(id) {
-    const r = $('#retireDoc'); if (r) r.addEventListener('click', () => { S.retire(id); toast('Archived — hidden from Know and Ask'); rerender(); });
+    const r = $('#retireDoc'); if (r) r.addEventListener('click', () => { S.retire(id); toast('Archived — hidden from Refer and Ask'); rerender(); });
     const s = $('#restoreDoc'); if (s) s.addEventListener('click', () => { S.restore(id); toast('Restored'); rerender(); });
   }
   function viewArchivedVersion(id, ver) {
@@ -1583,10 +1779,14 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       else if (b === 'update') { html = viewUpdate(c); bind = () => bindUpdate(c); }
       else if (b === 'record') html = viewRecord();
       else html = viewLearn();
-    } else if (a === 'know') {
+    } else if (a === 'refer') {
       if (b === 'doc') { html = viewDoc(c); bind = () => bindDoc(c); }
       else if (b === 'f') html = viewFolder(c);
       else { html = viewKnow(); bind = bindKnow; }
+    } else if (a === 'navigate') {
+      if (c) html = viewGuide(b, c);
+      else if (b) html = viewSystem(b);
+      else html = viewNavigate();
     } else if (a === 'ask') { html = viewAsk(); bind = bindAsk; }
     else if (a === 'team') {
       if (!S.canSeeTeam(me)) html = notFound();

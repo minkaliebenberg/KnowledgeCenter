@@ -5,7 +5,7 @@
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v2';
+  const KEY = 'crownring-kc-demo-v3';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -151,6 +151,13 @@
     save();
   };
 
+
+  /* ---------- NAVIGATE: systems & how-to guides (reference only, no tracking) ---------- */
+  S.systems = (u) => (state.systems || []).filter((x) => S.isAdmin(u) || appliesTo(x.depts, u));
+  S.system = (id) => (state.systems || []).find((x) => x.id === id);
+  S.guide = (sysId, gid) => { const x = S.system(sysId); return x && x.guides.find((g) => g.id === gid); };
+  S.guideRef = (ref) => { const [sid, gid] = ref.split(':'); return { sys: S.system(sid), g: S.guide(sid, gid) }; };
+
   /* ---------- ASK: simulated retrieval over CURRENT, ACTIVE docs only ---------- */
   const STOP = new Set('a an the is are was were be to of and or in on for with what how do does i we our my me can when who where which should if it this that at by from any about need you have get as there their they them your'.split(' '));
   const stem = (w) => w.replace(/(ing|ed|es|s)$/, '');
@@ -177,6 +184,17 @@
         hits.push({ d, v, s, idx, score: score * coverage, coverage });
       });
     });
+    // How-to guides from Navigate are searchable too
+    S.systems(u).forEach((sys) => sys.guides.forEach((g) => {
+      const body = g.steps.join(' ');
+      if (/^Placeholder/.test(body)) return;
+      const titleT = tokens(g.title + ' ' + sys.name);
+      const bodyT = tokens(body + ' ' + g.tip);
+      let score = 0;
+      q.forEach((w) => { if (titleT.includes(w)) score += 2; if (bodyT.includes(w)) score += 1.5; });
+      const coverage = q.filter((w) => titleT.includes(w) || bodyT.includes(w)).length / q.length;
+      hits.push({ guide: g, sys, score: score * coverage, coverage });
+    }));
     hits.sort((a, b) => b.score - a.score);
     const top = hits[0];
     if (!top || top.score < 2.5 || top.coverage < 0.5) return { found: false };

@@ -2,7 +2,8 @@
    CrownRing Knowledge Center — prototype UI (plain JS, hash routing, no build)
    Routes:
      #/learn  #/learn/module/:id[/:step]  #/learn/update/:docId  #/learn/record
-     #/know   #/know/f/:folderId   #/know/doc/:id
+     #/refer   #/refer/f/:folderId   #/refer/doc/:id
+     #/navigate   #/navigate/:systemId   #/navigate/:systemId/:guideId
      #/ask
      #/team   #/team/:userId
      #/manage (register)  #/manage/doc/:id  #/manage/doc/:id/v/:ver  #/manage/edit/:id  #/manage/roadmap
@@ -77,7 +78,7 @@
   /* ---------- chrome ---------- */
   function renderChrome(route) {
     const me = S.me();
-    const items = [['learn', 'Learn', ''], ['know', 'Know', ''], ['ask', 'Ask', '']];
+    const items = [['learn', 'Learn', ''], ['refer', 'Refer', ''], ['navigate', 'Navigate', ''], ['ask', 'Ask', '']];
     if (S.canSeeTeam(me)) items.push(['team', 'My Team', '']);
     if (S.isAdmin(me)) items.push(['manage', 'Manage', '']);
     $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra}</a>`).join('');
@@ -169,7 +170,7 @@
     return `<div class="narrow">${head}
       <article class="card">
         <h1>${esc(d.title)}</h1>
-        <p class="meta">v${esc(v.v)} · ${fmtDate(v.date)} · <a href="#/know/doc/${d.id}">Open in Know</a></p>
+        <p class="meta">v${esc(v.v)} · ${fmtDate(v.date)} · <a href="#/refer/doc/${d.id}">Open in Refer</a></p>
         <div class="doc-body">${docBody(v)}</div>
       </article>
       <div class="row spread nav-btns">
@@ -187,7 +188,7 @@
           if (st.submitted) { if (oi === q.a) cls = 'correct'; else if (st.picks[qi] === oi) cls = 'wrong'; }
           return `<label class="opt ${cls}"><input type="radio" name="q${qi}" value="${oi}" ${st.picks[qi] === oi ? 'checked' : ''} ${st.submitted ? 'disabled' : ''}> ${esc(o)}</label>`;
         }).join('')}
-        ${st.submitted && st.picks[qi] !== q.a ? `<p class="small">See <a href="#/know/doc/${q.docRef}">${esc(S.doc(q.docRef).title)}</a></p>` : ''}
+        ${st.submitted && st.picks[qi] !== q.a ? `<p class="small">See <a href="#/refer/doc/${q.docRef}">${esc(S.doc(q.docRef).title)}</a></p>` : ''}
       </div>`).join('');
     let result = '';
     if (st.submitted) {
@@ -227,7 +228,7 @@
         <div><span class="badge warn">Update</span><h1>${esc(d.title)}</h1><p class="meta">v${esc(v.v)} · ${fmtDate(v.date)}</p></div>
         <div class="changes"><strong>What changed</strong><p>${esc(v.summary)}</p></div>
         ${prev ? `<details><summary>Show exact changes</summary><div class="doc-body diff">${sectionDiff(prev, v)}</div></details>` : ''}
-        <p><a href="#/know/doc/${d.id}">Open the full document</a></p>
+        <p><a href="#/refer/doc/${d.id}">Open the full document</a></p>
         ${done ? `<div class="result ok">✓ Acknowledged ${fmtDate(done.date)}</div>`
           : `<label class="opt"><input type="checkbox" id="ackBox"> I've read and understand these changes</label>
              <button class="btn" id="ackBtn" type="button" disabled>Acknowledge</button>`}
@@ -267,7 +268,7 @@
   let knowQuery = '';
   const fileRow = (d, snippet) => {
     const v = S.current(d);
-    return `<a class="list-row" href="#/know/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
+    return `<a class="list-row" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
       <span class="grow"><strong>${esc(d.title)}</strong><span class="sub">${snippet || esc(d.type)}</span></span>
       <span class="muted small nowrap">${fmtDate(v.date)}</span></a>`;
   };
@@ -281,7 +282,7 @@
       <div id="knowBrowse">
         <div class="tiles">${S.state.folders.map((f) => {
           const n = docs.filter((d) => d.folder === f.id).length;
-          return n ? `<a class="tile" href="#/know/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
+          return n ? `<a class="tile" href="#/refer/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
         }).join('')}</div>
         <h2 class="section-title">Recently updated</h2>
         <div class="card list">${recent.map((d) => fileRow(d)).join('')}</div>
@@ -290,7 +291,7 @@
   function viewFolder(fid) {
     const f = S.folder(fid); if (!f) return notFound();
     const docs = S.visibleDocs(S.me()).filter((d) => d.folder === fid).sort((a, b) => a.title.localeCompare(b.title));
-    return `<a href="#/know" class="small">← Know</a>
+    return `<a href="#/refer" class="small">← Refer</a>
       <h1>${f.icon} ${esc(f.name)}</h1>
       <div class="card list">${docs.map((d) => fileRow(d)).join('') || '<div class="empty">Nothing here for your team.</div>'}</div>`;
   }
@@ -330,12 +331,12 @@
   function viewDoc(id) {
     const me = S.me();
     const d = S.doc(id);
-    if (!d || !S.visibleDocs(me).includes(d)) return `<div class="card empty">This document isn't available. <a href="#/know">Back to Know</a></div>`;
+    if (!d || !S.visibleDocs(me).includes(d)) return `<div class="card empty">This document isn't available. <a href="#/refer">Back to Refer</a></div>`;
     const v = S.current(d);
     const f = S.folder(d.folder);
     const related = d.links.map(S.doc).filter((x) => x && S.visibleDocs(me).includes(x));
     const history = d.versions.filter((x) => x.status !== 'draft').slice().reverse();
-    return `<div class="narrow"><a href="#/know/f/${f.id}" class="small">← ${esc(f.name)}</a>
+    return `<div class="narrow"><a href="#/refer/f/${f.id}" class="small">← ${esc(f.name)}</a>
       <article class="card">
         <h1>${esc(d.title)}</h1>
         <p class="meta">${esc(d.type)} · v${esc(v.v)} · Updated ${fmtDate(v.date)}</p>
@@ -345,7 +346,8 @@
           ${S.isAdmin(me) ? `<a class="btn btn-sm btn-ghost" href="#/manage/doc/${d.id}">Manage</a>` : ''}
         </div>
         <div class="doc-body">${docBody(v)}</div>
-        ${related.length ? `<h3 class="related-h">Related</h3><div class="pill-row">${related.map((r) => `<a class="chip" href="#/know/doc/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
+        ${(d.guides || []).length ? `<h3 class="related-h">How-to guides</h3><div class="pill-row">${d.guides.map(S.guideRef).filter((x) => x.g && S.systems(me).includes(x.sys)).map((x) => `<a class="chip" href="#/navigate/${x.sys.id}/${x.g.id}">↗ ${esc(x.g.title)}</a>`).join('')}</div>` : ''}
+        ${related.length ? `<h3 class="related-h">Related</h3><div class="pill-row">${related.map((r) => `<a class="chip" href="#/refer/doc/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
         <details class="history"><summary>Version history</summary>
           <ul>${history.map((x) => `<li><strong>v${esc(x.v)}</strong> · ${fmtDate(x.date)} — ${esc(x.summary)}</li>`).join('')}</ul></details>
       </article></div>`;
@@ -354,16 +356,74 @@
     const b = $('#docQuestion'); if (b) b.addEventListener('click', () => suggestModal('About "' + S.doc(id).title + '": ', 'question'));
   }
 
+
+  /* =========================================================================
+     NAVIGATE — how-to guides for the systems we use (reference only)
+     ========================================================================= */
+  function viewNavigate() {
+    const list = S.systems(S.me());
+    return `<div class="sys-grid">${list.map((x) => `<a class="sys-card" href="#/navigate/${x.id}">
+        <span class="mono">${esc(x.mono)}</span>
+        <span class="grow"><strong>${esc(x.name)}</strong><span class="sub">${esc(x.tagline)}</span><span class="sub count-line">${x.guides.length} guides</span></span>
+        <span class="arrow">→</span></a>`).join('') || '<div class="card empty">No systems for your team yet.</div>'}</div>`;
+  }
+  const guideRow = (x, gd, n) => `<a class="list-row" href="#/navigate/${x.id}/${gd.id}">
+      <span class="row-ico ${n ? 'num' : 'plain-g'}">${n || (gd.video ? '▶' : '≡')}</span>
+      <span class="grow"><strong>${esc(gd.title)}</strong>${gd.video ? `<span class="sub">Video · ${gd.video}</span>` : '<span class="sub">Written guide</span>'}</span></a>`;
+  function viewSystem(id) {
+    const x = S.system(id);
+    if (!x || !S.systems(S.me()).includes(x)) return notFound();
+    const G = (gid) => x.guides.find((g) => g.id === gid);
+    const owner = x.owner ? S.user(x.owner).name : x.ownerLabel;
+    return `<a href="#/navigate" class="small">← Navigate</a>
+      <div class="sys-head">
+        <span class="mono lg">${esc(x.mono)}</span>
+        <div class="grow"><h1>${esc(x.name)}</h1><p class="lead">${esc(x.tagline)}</p>
+          <p class="small muted"><strong>When to use it:</strong> ${esc(x.when)}<br><strong>Owner:</strong> ${esc(owner)}</p></div>
+        <a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Open ${esc(x.name)} ↗</a>
+      </div>
+      <h2 class="section-title">Start here</h2>
+      <div class="card list">${x.startHere.map((gid, i) => guideRow(x, G(gid), i + 1)).join('')}</div>
+      ${x.sections.map((sec) => `<h2 class="section-title">${esc(sec.title)}</h2><div class="card list">${sec.guides.map((gid) => guideRow(x, G(gid))).join('')}</div>`).join('')}
+      ${x.faq.length ? `<h2 class="section-title">FAQ</h2><div class="card list faq">${x.faq.map((f) => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('')}</div>` : ''}`;
+  }
+  function viewGuide(sid, gid) {
+    const x = S.system(sid); const gd = S.guide(sid, gid);
+    if (!x || !gd || !S.systems(S.me()).includes(x)) return notFound();
+    const order = x.sections.flatMap((s) => s.guides);
+    const i = order.indexOf(gid);
+    const sec = x.sections.find((s) => s.guides.includes(gid));
+    const next = order[i + 1] && x.guides.find((g) => g.id === order[i + 1]);
+    const prev = i > 0 && x.guides.find((g) => g.id === order[i - 1]);
+    const rel = gd.related.map((r) => x.guides.find((g) => g.id === r)).filter(Boolean);
+    const docs = gd.docs.map(S.doc).filter((d) => d && S.visibleDocs(S.me()).includes(d));
+    return `<div class="narrow"><a href="#/navigate/${x.id}" class="small">← ${esc(x.name)}</a>
+      <article class="card">
+        <p class="meta">${esc(x.name)} · ${esc(sec ? sec.title : '')}</p>
+        <h1>${esc(gd.title)}</h1>
+        ${gd.video ? `<div class="video-ph" role="img" aria-label="Video placeholder"><span class="play">▶</span><span class="small">Video · ${gd.video}</span></div>` : ''}
+        <ol class="steps">${gd.steps.map((st) => `<li>${md(st).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol>
+        ${gd.tip ? `<div class="tip"><strong>Good to know</strong><p>${esc(gd.tip)}</p></div>` : ''}
+        ${rel.length ? `<h3 class="related-h">Related guides</h3><div class="pill-row">${rel.map((r) => `<a class="chip" href="#/navigate/${x.id}/${r.id}">${esc(r.title)}</a>`).join('')}</div>` : ''}
+        ${docs.length ? `<h3 class="related-h">In Refer</h3><div class="pill-row">${docs.map((d) => `<a class="chip" href="#/refer/doc/${d.id}">${esc(d.title)}</a>`).join('')}</div>` : ''}
+      </article>
+      <div class="row spread nav-btns">
+        ${prev ? `<a class="btn btn-ghost" href="#/navigate/${x.id}/${prev.id}">← ${esc(prev.title)}</a>` : '<span></span>'}
+        ${next ? `<a class="btn btn-ghost" href="#/navigate/${x.id}/${next.id}">${esc(next.title)} →</a>` : ''}
+      </div></div>`;
+  }
+
   /* =========================================================================
      ASK (simulated)
      ========================================================================= */
   let askLog = [];
-  const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'What does the warranty cover?'];
+  const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'How do I merge tickets?'];
   function answerHtml(r) {
     if (!r.found) return `<p>I couldn't find that in our documents, so I won't guess.</p>
       <button class="btn btn-sm btn-ghost send-ld" type="button">Send question to L&amp;D</button>`;
     const t = r.top;
-    return `${md(t.s.body)}<p class="source">Source: <a href="#/know/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
+    if (t.guide) return `<ol class="steps small-steps">${t.guide.steps.map((x) => `<li>${md(x).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol><p class="source">Source: <a href="#/navigate/${t.sys.id}/${t.guide.id}">${esc(t.sys.name)} › ${esc(t.guide.title)}</a></p>`;
+    return `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
   }
   function viewAsk() {
     return `<div class="narrow ask">
@@ -519,7 +579,7 @@
     return `<a href="#/manage" class="small">← Register</a>
       <div class="row spread"><div><h1>${esc(d.title)}</h1><p class="meta">${statusBadge(d)} ${cur ? 'v' + esc(cur.v) + ' · ' : ''}${esc(S.folder(d.folder).name)} · ${esc(d.type)}</p></div>
         <div class="row">
-          ${d.status === 'active' ? `<a class="btn btn-ghost" href="#/know/doc/${d.id}">View</a>` : ''}
+          ${d.status === 'active' ? `<a class="btn btn-ghost" href="#/refer/doc/${d.id}">View</a>` : ''}
           ${d.status === 'retired' ? '<button class="btn btn-ghost" id="restoreDoc" type="button">Restore</button>' : `<a class="btn" href="#/manage/edit/${d.id}">${d.status === 'active' ? 'New version' : 'Edit & publish'}</a>`}
         </div></div>
       <div class="grid-main">
@@ -547,7 +607,7 @@
       </div>`;
   }
   function bindManageDoc(id) {
-    const r = $('#retireDoc'); if (r) r.addEventListener('click', () => { S.retire(id); toast('Archived — hidden from Know and Ask'); rerender(); });
+    const r = $('#retireDoc'); if (r) r.addEventListener('click', () => { S.retire(id); toast('Archived — hidden from Refer and Ask'); rerender(); });
     const s = $('#restoreDoc'); if (s) s.addEventListener('click', () => { S.restore(id); toast('Restored'); rerender(); });
   }
   function viewArchivedVersion(id, ver) {
@@ -709,10 +769,14 @@
       else if (b === 'update') { html = viewUpdate(c); bind = () => bindUpdate(c); }
       else if (b === 'record') html = viewRecord();
       else html = viewLearn();
-    } else if (a === 'know') {
+    } else if (a === 'refer') {
       if (b === 'doc') { html = viewDoc(c); bind = () => bindDoc(c); }
       else if (b === 'f') html = viewFolder(c);
       else { html = viewKnow(); bind = bindKnow; }
+    } else if (a === 'navigate') {
+      if (c) html = viewGuide(b, c);
+      else if (b) html = viewSystem(b);
+      else html = viewNavigate();
     } else if (a === 'ask') { html = viewAsk(); bind = bindAsk; }
     else if (a === 'team') {
       if (!S.canSeeTeam(me)) html = notFound();

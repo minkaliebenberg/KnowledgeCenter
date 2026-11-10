@@ -377,4 +377,94 @@
       { id: 'R11', title: 'NC Finished Prong Tolerances - Center Stones', status: 'done', priority: 'Med', work: 'Update Existing', effort: 'Minor', type: 'Quick Reference', docId: 'D24' },
     ],
   };
+
+  /* ---------------------------------------------------------------------------
+     NAVIGATE — how-to guides for the systems we use. Pure reference: no
+     completion tracking. Each guide is one task ("How to…"). Guides are
+     searchable by Ask, and documents in Refer can link to them.
+     ALL GUIDE TEXT IS PLACEHOLDER.
+  --------------------------------------------------------------------------- */
+  const g = (id, title, steps, o) => Object.assign({ id, title, steps, video: null, tip: '', related: [], docs: [] }, o || {});
+  window.SEED.systems = [
+    { id: 'zoho', name: 'Zoho Desk', mono: 'Z', depts: ['NC', 'CS'], owner: 'u5', url: 'https://www.zoho.com/desk/',
+      tagline: 'Our helpdesk for every retailer email, call and request.',
+      when: 'Any time a retailer contacts us. Every request becomes a ticket so nothing gets lost and anyone on the team can pick it up.',
+      startHere: ['z1', 'z2', 'z5', 'z8', 'z10', 'z15'],
+      sections: [
+        { title: 'Helpdesk basics', guides: ['z1', 'z2', 'z3', 'z4'] },
+        { title: 'Getting set up', guides: ['z5', 'z6', 'z7'] },
+        { title: 'A ticket from start to finish', guides: ['z8', 'z9', 'z10', 'z11', 'z12', 'z13', 'z14', 'z15'] },
+        { title: 'Special situations', guides: ['z16', 'z17', 'z18', 'z19'] },
+        { title: 'Working smarter', guides: ['z20', 'z21'] },
+      ],
+      faq: [
+        { q: 'A retailer replied to a closed ticket. What happens?', a: 'Their reply reopens the ticket automatically and it goes back to the owner. Placeholder answer.' },
+        { q: 'Two people replied to the same ticket at the same time. How do I avoid that?', a: 'Check the agent collision indicator at the top of the ticket before replying. Placeholder answer.' },
+        { q: 'Should I reply from Outlook instead?', a: 'No. Always reply from Zoho Desk so the conversation stays on the ticket. Placeholder answer.' },
+      ],
+      guides: [
+        g('z1', 'What is a ticket?', ['A ticket is one request from one retailer, with the whole conversation attached.', 'Every email, call or chat becomes a ticket.', 'Tickets have an owner, a status and a due date, so nothing falls through the cracks.'], { video: '2 min', related: ['z2', 'z3'] }),
+        g('z2', 'The life of a ticket', ['**New** — the request has arrived and no one owns it yet.', '**Open** — someone owns it and is working on it.', '**On Hold** — waiting on the retailer or another department.', '**Closed** — the retailer has their answer.'], { video: '2 min', related: ['z13', 'z15'] }),
+        g('z3', 'Key terms', ['**Contact** — the person who wrote to us.', '**Account** — the retailer (store) they belong to.', '**Owner** — the person responsible for the ticket.', '**Reply** vs **internal comment** — replies go to the retailer, comments stay inside the team.'], { related: ['z1'] }),
+        g('z4', 'How our team uses Zoho Desk', ['Every retailer request gets a ticket.', 'Take ownership before you reply.', 'Use approved wording from Templates & Disclaimers.', 'Close the ticket once the retailer has their answer.'], { docs: ['D11', 'D10'], tip: 'These are our team rules, not Zoho settings. The full procedure is in Refer.' }),
+        g('z5', 'How to log in and find your way around', ['Open Zoho Desk and sign in with your work account.', 'The left bar switches between Tickets, Contacts and Accounts.', 'The top bar holds search and your department switcher.'], { video: '3 min', related: ['z6', 'z8'] }),
+        g('z6', 'How to set up your email signature', ['Click your profile picture, then **Personal settings**.', 'Open **Signature** and paste the approved signature.', 'Save, then send yourself a test reply.'], { video: '1 min', docs: ['D10'] }),
+        g('z7', 'How to manage your notifications', ['Open **Personal settings → Notifications**.', 'Turn on alerts for tickets assigned to you.', 'Turn off alerts you do not need.'], { video: '1 min' }),
+        g('z8', 'How to find your tickets', ['Use the view menu to switch to **My Open Tickets**.', 'Filter by status or priority.', 'Use the search bar for a PO number, retailer or contact name.'], { video: '3 min', related: ['z20'], tip: 'Search by PO number is the fastest way to find a specific order.' }),
+        g('z9', 'How to take ownership of a ticket', ['Open the ticket.', 'Set **Owner** to yourself.', 'The ticket now shows in your views and nobody else will pick it up.'], { video: '1 min' }),
+        g('z10', 'How to reply to a retailer', ['Open the ticket and click **Reply**.', 'Write your answer, or start from a template.', 'Check the To and CC fields, then **Send**.'], { video: '2 min', related: ['z11', 'z12'], docs: ['D10'] }),
+        g('z11', 'How to use templates (macros)', ['Open the ticket.', 'Click **Apply Macro** at the bottom.', 'Pick the template, review the text and send.'], { video: '2 min', docs: ['D10'] }),
+        g('z12', 'How to add an internal comment', ['Click **Comment** instead of Reply.', 'Mention a colleague with @ to notify them.', 'Comments are never sent to the retailer.'], { video: '1 min' }),
+        g('z13', 'How to update status and priority', ['Use the fields on the left of the ticket.', 'Set **On Hold** while you wait on someone else.', 'Raise the priority for rush or urgent requests.'], { video: '1 min', docs: ['D38'] }),
+        g('z14', 'How to transfer a ticket to another department', ['Open the ticket.', 'Change the **Department** field.', 'Add an internal comment explaining why.'], { video: '1 min' }),
+        g('z15', 'How to close or reopen a ticket', ['Set the status to **Closed** once the retailer has their answer.', 'To reopen, change the status back to **Open**.'], { video: '1 min', related: ['z2'] }),
+        g('z16', 'How to log a phone call', ['Click **New ticket**.', 'Choose **Phone** as the channel.', 'Summarise the call and assign it.'], { video: '2 min' }),
+        g('z17', 'How to merge duplicate tickets', ['Select both tickets in the list.', 'Click **Merge** and choose which one to keep.', 'The conversations are combined into one ticket.'], { video: '1 min' }),
+        g('z18', 'How to handle spam and misdirected emails', ['Mark obvious spam as **Spam**.', 'Transfer misdirected emails to the right department.'], {}),
+        g('z19', 'How to cover for a colleague', ['Filter by their name as owner.', 'Reassign urgent tickets to yourself.', 'Leave an internal comment so they know when they return.'], {}),
+        g('z20', 'How to save a custom view', ['Set up the filters you use most.', 'Click **Save as view** and name it.'], { video: '1 min' }),
+        g('z21', 'Keyboard shortcuts', ['Placeholder: the most useful shortcuts for replying, commenting and moving between tickets.'], {}),
+      ] },
+
+    { id: 'designbuddy', name: 'DesignBuddy', mono: 'DB', depts: ['NC'], owner: null, ownerLabel: 'DesignBuddy creator (management)', url: 'https://ludovickninja.github.io/DesignBuddyDesktop/',
+      tagline: 'Our in-house toolkit for quoting custom projects.',
+      when: 'When quoting custom work: stone counts, metal weights, conversions, and the forms that go with a custom request.',
+      startHere: ['d0', 'd1', 'd4', 'd11'],
+      sections: [
+        { title: 'Getting started', guides: ['d0'] },
+        { title: 'Stone Counts', guides: ['d1', 'd2', 'd3'] },
+        { title: 'Weights', guides: ['d4', 'd5', 'd6', 'd7'] },
+        { title: 'Informations', guides: ['d8', 'd9', 'd10'] },
+        { title: 'Forms', guides: ['d11', 'd12', 'd13'] },
+        { title: 'GPTs', guides: ['d14'] },
+        { title: 'Tools (beta)', guides: ['d15', 'd16'] },
+      ],
+      faq: [
+        { q: 'Is the stone count exact?', a: 'It is an estimate to help quote. Final counts are confirmed in CAD. Placeholder answer.' },
+        { q: 'Can I use it in French?', a: 'Yes — switch the language in the sidebar.' },
+      ],
+      guides: [
+        g('d0', 'What is DesignBuddy?', ['A set of calculators and forms built to speed up custom quoting.', 'Use the sidebar to move between Stone Counts, Weights, Informations, Forms, GPTs and Tools.'], { video: '2 min' }),
+        g('d1', 'Stone Count: Full Eternity', ['Choose the coverage: **Full**, **Three Quarter** or **Semi**.', 'Select the finger size region (e.g. US).', 'Enter the finger size, band thickness and spacing between stones (default 0.2 mm).', 'Enter the melee diameter.', 'Read **Total Stones Needed**.'], { video: '3 min', docs: ['D26', 'D27'], tip: 'Use it for an estimate while quoting; CAD confirms the final count.' }),
+        g('d2', 'Stone Count: Halos', ['Placeholder: choose the center stone shape and size, then the melee size, to estimate the halo stone count.'], { video: '3 min', docs: ['D27'] }),
+        g('d3', 'Stone Count: Hidden Halos', ['Placeholder: same as Halos, for hidden halo designs.'], { video: '2 min' }),
+        g('d4', 'Weight: Karat Conversion', ['Placeholder: convert a known weight from one karat or metal to another.'], { video: '2 min', docs: ['D29'] }),
+        g('d5', 'Weight: Wedding Band', ['Placeholder: estimate band weight from profile, width, thickness and size.'], { video: '2 min', docs: ['D26'] }),
+        g('d6', 'Weight: Width Conversion', ['Placeholder: estimate how weight changes when the band width changes.'], { video: '2 min' }),
+        g('d7', 'Weight: Diamond Sizes', ['Placeholder: look up diamond size to carat weight.'], { video: '2 min', docs: ['D25'] }),
+        g('d8', 'Useful Links & FAQ', ['Placeholder: what you will find in Useful Links and the built-in FAQ.'], {}),
+        g('d9', 'Jewelry News Feed', ['Placeholder: industry news, and how it can help in conversations with retailers.'], {}),
+        g('d10', 'Contact Repository', ['Placeholder: where to find supplier and partner contacts.'], { docs: ['D17'] }),
+        g('d11', 'Rush Requests form', ['Placeholder: when to submit a rush request and what happens after you submit it.'], { docs: ['D38'] }),
+        g('d12', 'Stone Order Form', ['Placeholder: when to order stones and the details you need first.'], {}),
+        g('d13', 'Employee Suggestions form', ['Placeholder: share ideas to improve DesignBuddy.'], {}),
+        g('d14', 'Design Buddy Chat (GPT)', ['Placeholder: what to ask it, its limits, and when to double-check its answer.'], { tip: 'Always confirm pricing and policy answers against the documents in Refer.' }),
+        g('d15', 'Style Match (work in progress)', ['Placeholder: beta tool — what it does today.'], {}),
+        g('d16', '3DM to GLB', ['Placeholder: convert a CAD file so it can be viewed in a browser.'], {}),
+      ] },
+  ];
+
+  /* Documents in Refer that link out to how-to guides */
+  const docGuides = { D11: ['zoho:z4', 'zoho:z8'], D10: ['zoho:z11'], D38: ['designbuddy:d11'], D26: ['designbuddy:d5'], D27: ['designbuddy:d1'] };
+  window.SEED.documents.forEach((d) => { d.guides = docGuides[d.id] || []; });
 })();
