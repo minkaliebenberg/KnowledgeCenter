@@ -5,7 +5,7 @@
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v3';
+  const KEY = 'crownring-kc-demo-v4';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -151,6 +151,24 @@
     save();
   };
 
+
+
+  /* ---------- REFER: per-person favourites & recently viewed ---------- */
+  const ensure = () => { state.favorites = state.favorites || {}; state.recent = state.recent || {}; };
+  S.favs = (u) => { ensure(); return (state.favorites[u.id] || []).map(S.doc).filter((d) => d && S.visibleDocs(u).includes(d)); };
+  S.isFav = (u, id) => { ensure(); return (state.favorites[u.id] || []).includes(id); };
+  S.toggleFav = (u, id) => {
+    ensure(); const l = state.favorites[u.id] = state.favorites[u.id] || [];
+    const i = l.indexOf(id); if (i >= 0) l.splice(i, 1); else l.unshift(id);
+    save(); return i < 0;
+  };
+  S.recent = (u) => { ensure(); return (state.recent[u.id] || []).map(S.doc).filter((d) => d && S.visibleDocs(u).includes(d)).slice(0, 5); };
+  S.markViewed = (u, id) => {
+    ensure(); const l = (state.recent[u.id] || []).filter((x) => x !== id);
+    l.unshift(id); state.recent[u.id] = l.slice(0, 10); save();
+  };
+  /* "Updated" badge: current version published in the last 30 days */
+  S.isRecentlyUpdated = (d) => { const v = S.current(d); if (!v) return false; const t = new Date(state.today + 'T12:00:00'); t.setDate(t.getDate() - 30); return v.date >= t.toISOString().slice(0, 10); };
 
   /* ---------- NAVIGATE: systems & how-to guides (reference only, no tracking) ---------- */
   S.systems = (u) => (state.systems || []).filter((x) => S.isAdmin(u) || appliesTo(x.depts, u));

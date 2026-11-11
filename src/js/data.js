@@ -464,6 +464,10 @@
       ] },
   ];
 
+  /* Per-person Refer shortcuts (seeded so the demo shows them) */
+  window.SEED.favorites = { u4: ['D19', 'D10', 'D38', 'D32'], u3: ['D3', 'D9'] };
+  window.SEED.recent = { u4: ['D3', 'D6', 'D30', 'D21'], u3: ['D24', 'D11'] };
+
   /* Documents in Refer that link out to how-to guides */
   const docGuides = { D11: ['zoho:z4', 'zoho:z8'], D10: ['zoho:z11'], D38: ['designbuddy:d11'], D26: ['designbuddy:d5'], D27: ['designbuddy:d1'] };
   window.SEED.documents.forEach((d) => { d.guides = docGuides[d.id] || []; });

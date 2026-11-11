@@ -11,10 +11,10 @@
   <style>
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
-/* Palette: "Ivory, Ink & Champagne" — Off-white #F6F5F2, Paper #FAF7F0, Stone #E3E1DC, Warm grey #74726E,
+/* Palette: "Ivory, Ink & Champagne" — Off-white #F5F3EE, Paper #FAF7F0, Stone #E3E1DC, Warm grey #74726E,
    Navy ink #29324A, Champagne gold #B89B5E (used sparingly) */
 :root {
-  --bg: #f6f5f2; --surface: #faf7f0; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
+  --bg: #f5f3ee; --surface: #faf7f0; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
   --accent: #29324a; --accent-hover: #3b4562; --on-accent: #f6f5f2; --accent-strong: #29324a; --accent-soft: #eeebe4;
   --gold: #b89b5e; --mark: #b89b5e; --navy: #29324a; --slate: #29324a; --cream: #f6f5f2;
   --header-bg: #faf7f0; --header-text: #29324a; --header-muted: #74726e; --header-hover: #efeeea; --demo-bg: #29324a; --demo-text: #e9e2d4;
@@ -296,6 +296,20 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .tip { border-left: 2px solid var(--gold); padding: 6px 0 6px 14px; margin: 18px 0; }
 .tip p { margin: 4px 0 0; color: var(--muted); }
 @media (max-width: 760px) { .sys-head .btn { width: 100%; } .sys-grid { grid-template-columns: 1fr; } }
+
+/* ---- Refer: favourites, recently viewed, updated badge ---- */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.two-col .section-title { margin-top: 28px; }
+.star-h { color: var(--gold); font-size: .95em; }
+.list-row.mini { padding: 10px 14px 10px 18px; }
+.list-row.mini strong { font-weight: 500; }
+.fav-btn { flex: none; background: none; border: 0; padding: 4px 6px; margin: -4px -6px -4px 0; cursor: pointer; color: var(--border); font-size: 18px; line-height: 1; border-radius: 6px; }
+.fav-btn:hover { color: var(--gold); background: var(--surface-2); }
+.fav-btn.on { color: var(--gold); }
+.fav-toggle.on { color: var(--gold); border-color: var(--gold); }
+.upd { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: .03em; color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); vertical-align: 1px; }
+@media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } .two-col .section-title { margin-top: 20px; } }
+.h1-ico { font-size: .8em; vertical-align: 2px; margin: 0 4px 0 0; }
 
 </style>
 </head>
@@ -793,6 +807,10 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       ] },
   ];
 
+  /* Per-person Refer shortcuts (seeded so the demo shows them) */
+  window.SEED.favorites = { u4: ['D19', 'D10', 'D38', 'D32'], u3: ['D3', 'D9'] };
+  window.SEED.recent = { u4: ['D3', 'D6', 'D30', 'D21'], u3: ['D24', 'D11'] };
+
   /* Documents in Refer that link out to how-to guides */
   const docGuides = { D11: ['zoho:z4', 'zoho:z8'], D10: ['zoho:z11'], D38: ['designbuddy:d11'], D26: ['designbuddy:d5'], D27: ['designbuddy:d1'] };
   window.SEED.documents.forEach((d) => { d.guides = docGuides[d.id] || []; });
@@ -807,7 +825,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v3';
+  const KEY = 'crownring-kc-demo-v4';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -953,6 +971,24 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     save();
   };
 
+
+
+  /* ---------- REFER: per-person favourites & recently viewed ---------- */
+  const ensure = () => { state.favorites = state.favorites || {}; state.recent = state.recent || {}; };
+  S.favs = (u) => { ensure(); return (state.favorites[u.id] || []).map(S.doc).filter((d) => d && S.visibleDocs(u).includes(d)); };
+  S.isFav = (u, id) => { ensure(); return (state.favorites[u.id] || []).includes(id); };
+  S.toggleFav = (u, id) => {
+    ensure(); const l = state.favorites[u.id] = state.favorites[u.id] || [];
+    const i = l.indexOf(id); if (i >= 0) l.splice(i, 1); else l.unshift(id);
+    save(); return i < 0;
+  };
+  S.recent = (u) => { ensure(); return (state.recent[u.id] || []).map(S.doc).filter((d) => d && S.visibleDocs(u).includes(d)).slice(0, 5); };
+  S.markViewed = (u, id) => {
+    ensure(); const l = (state.recent[u.id] || []).filter((x) => x !== id);
+    l.unshift(id); state.recent[u.id] = l.slice(0, 10); save();
+  };
+  /* "Updated" badge: current version published in the last 30 days */
+  S.isRecentlyUpdated = (d) => { const v = S.current(d); if (!v) return false; const t = new Date(state.today + 'T12:00:00'); t.setDate(t.getDate() - 30); return v.date >= t.toISOString().slice(0, 10); };
 
   /* ---------- NAVIGATE: systems & how-to guides (reference only, no tracking) ---------- */
   S.systems = (u) => (state.systems || []).filter((x) => S.isAdmin(u) || appliesTo(x.depts, u));
@@ -1105,6 +1141,15 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   });
   $('#resetDemo').addEventListener('click', () => { S.reset(); askLog = []; route(); toast('Demo reset'); });
   $('#suggestBtn').addEventListener('click', () => suggestModal());
+  /* Favourite stars (in lists and on the document page) */
+  app.addEventListener('click', (e) => {
+    const b = e.target.closest('.fav-btn, .fav-toggle');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    const added = S.toggleFav(S.me(), b.dataset.id);
+    toast(added ? 'Added to favourites' : 'Removed from favourites');
+    rerender();
+  });
 
   function suggestModal(prefill = '', type = 'question') {
     const me = S.me();
@@ -1276,16 +1321,18 @@ h1 { font-weight: 500; letter-spacing: .01em; }
      KNOW
      ========================================================================= */
   let knowQuery = '';
+  const starBtn = (d) => { const on = S.isFav(S.me(), d.id); return `<button class="fav-btn ${on ? 'on' : ''}" data-id="${d.id}" type="button" aria-pressed="${on}" title="${on ? 'Remove from favourites' : 'Add to favourites'}" aria-label="${on ? 'Remove from favourites' : 'Add to favourites'}">${on ? '★' : '☆'}</button>`; };
   const fileRow = (d, snippet) => {
     const v = S.current(d);
     return `<a class="list-row" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
-      <span class="grow"><strong>${esc(d.title)}</strong><span class="sub">${snippet || esc(d.type)}</span></span>
-      <span class="muted small nowrap">${fmtDate(v.date)}</span></a>`;
+      <span class="grow"><strong>${esc(d.title)}</strong>${S.isRecentlyUpdated(d) ? ' <span class="upd">Updated</span>' : ''}<span class="sub">${snippet || esc(d.type)}</span></span>
+      <span class="muted small nowrap">${fmtDate(v.date)}</span>${starBtn(d)}</a>`;
   };
+  const miniRow = (d) => `<a class="list-row mini" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span><span class="grow"><strong>${esc(d.title)}</strong></span>${starBtn(d)}</a>`;
   function viewKnow() {
     const me = S.me();
     const docs = S.visibleDocs(me);
-    const recent = docs.slice().sort((a, b) => (S.current(a).date < S.current(b).date ? 1 : -1)).slice(0, 5);
+    const favs = S.favs(me), recent = S.recent(me);
     return `
       <div class="search-big"><input type="search" id="knowSearch" placeholder="Search documents" value="${esc(knowQuery)}" aria-label="Search documents"></div>
       <div id="knowResults"></div>
@@ -1294,15 +1341,19 @@ h1 { font-weight: 500; letter-spacing: .01em; }
           const n = docs.filter((d) => d.folder === f.id).length;
           return n ? `<a class="tile" href="#/refer/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
         }).join('')}</div>
-        <h2 class="section-title">Recently updated</h2>
-        <div class="card list">${recent.map((d) => fileRow(d)).join('')}</div>
+        <div class="two-col">
+          <section><h2 class="section-title"><span class="star-h">★</span> Favourites</h2>
+            <div class="card list">${favs.map(miniRow).join('') || '<div class="empty small">Tap ☆ on any document to keep it here.</div>'}</div></section>
+          <section><h2 class="section-title">Recently viewed</h2>
+            <div class="card list">${recent.map(miniRow).join('') || '<div class="empty small">Documents you open will show up here.</div>'}</div></section>
+        </div>
       </div>`;
   }
   function viewFolder(fid) {
     const f = S.folder(fid); if (!f) return notFound();
     const docs = S.visibleDocs(S.me()).filter((d) => d.folder === fid).sort((a, b) => a.title.localeCompare(b.title));
     return `<a href="#/refer" class="small">← Refer</a>
-      <h1>${f.icon} ${esc(f.name)}</h1>
+      <h1><span class="tile-ico h1-ico">${f.icon}</span> ${esc(f.name)}</h1>
       <div class="card list">${docs.map((d) => fileRow(d)).join('') || '<div class="empty">Nothing here for your team.</div>'}</div>`;
   }
   function bindKnow() {
@@ -1351,6 +1402,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
         <h1>${esc(d.title)}</h1>
         <p class="meta">${esc(d.type)} · v${esc(v.v)} · Updated ${fmtDate(v.date)}</p>
         <div class="row doc-actions">
+          <button class="btn btn-sm btn-ghost fav-toggle ${S.isFav(me, d.id) ? 'on' : ''}" data-id="${d.id}" type="button" aria-pressed="${S.isFav(me, d.id)}">${S.isFav(me, d.id) ? '★ Favourite' : '☆ Favourite'}</button>
           <button class="btn btn-sm btn-ghost" type="button" onclick="window.print()">⤓ PDF</button>
           <button class="btn btn-sm btn-ghost" id="docQuestion" type="button">Question?</button>
           ${S.isAdmin(me) ? `<a class="btn btn-sm btn-ghost" href="#/manage/doc/${d.id}">Manage</a>` : ''}
@@ -1363,6 +1415,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       </article></div>`;
   }
   function bindDoc(id) {
+    if (S.visibleDocs(S.me()).includes(S.doc(id))) S.markViewed(S.me(), id);
     const b = $('#docQuestion'); if (b) b.addEventListener('click', () => suggestModal('About "' + S.doc(id).title + '": ', 'question'));
   }
 

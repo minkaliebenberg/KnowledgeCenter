@@ -95,6 +95,15 @@
   });
   $('#resetDemo').addEventListener('click', () => { S.reset(); askLog = []; route(); toast('Demo reset'); });
   $('#suggestBtn').addEventListener('click', () => suggestModal());
+  /* Favourite stars (in lists and on the document page) */
+  app.addEventListener('click', (e) => {
+    const b = e.target.closest('.fav-btn, .fav-toggle');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    const added = S.toggleFav(S.me(), b.dataset.id);
+    toast(added ? 'Added to favourites' : 'Removed from favourites');
+    rerender();
+  });
 
   function suggestModal(prefill = '', type = 'question') {
     const me = S.me();
@@ -266,16 +275,18 @@
      KNOW
      ========================================================================= */
   let knowQuery = '';
+  const starBtn = (d) => { const on = S.isFav(S.me(), d.id); return `<button class="fav-btn ${on ? 'on' : ''}" data-id="${d.id}" type="button" aria-pressed="${on}" title="${on ? 'Remove from favourites' : 'Add to favourites'}" aria-label="${on ? 'Remove from favourites' : 'Add to favourites'}">${on ? '★' : '☆'}</button>`; };
   const fileRow = (d, snippet) => {
     const v = S.current(d);
     return `<a class="list-row" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
-      <span class="grow"><strong>${esc(d.title)}</strong><span class="sub">${snippet || esc(d.type)}</span></span>
-      <span class="muted small nowrap">${fmtDate(v.date)}</span></a>`;
+      <span class="grow"><strong>${esc(d.title)}</strong>${S.isRecentlyUpdated(d) ? ' <span class="upd">Updated</span>' : ''}<span class="sub">${snippet || esc(d.type)}</span></span>
+      <span class="muted small nowrap">${fmtDate(v.date)}</span>${starBtn(d)}</a>`;
   };
+  const miniRow = (d) => `<a class="list-row mini" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span><span class="grow"><strong>${esc(d.title)}</strong></span>${starBtn(d)}</a>`;
   function viewKnow() {
     const me = S.me();
     const docs = S.visibleDocs(me);
-    const recent = docs.slice().sort((a, b) => (S.current(a).date < S.current(b).date ? 1 : -1)).slice(0, 5);
+    const favs = S.favs(me), recent = S.recent(me);
     return `
       <div class="search-big"><input type="search" id="knowSearch" placeholder="Search documents" value="${esc(knowQuery)}" aria-label="Search documents"></div>
       <div id="knowResults"></div>
@@ -284,15 +295,19 @@
           const n = docs.filter((d) => d.folder === f.id).length;
           return n ? `<a class="tile" href="#/refer/f/${f.id}"><span class="tile-ico">${f.icon}</span><strong>${esc(f.name)}</strong><span class="muted small">${n} document${n === 1 ? '' : 's'}</span></a>` : '';
         }).join('')}</div>
-        <h2 class="section-title">Recently updated</h2>
-        <div class="card list">${recent.map((d) => fileRow(d)).join('')}</div>
+        <div class="two-col">
+          <section><h2 class="section-title"><span class="star-h">★</span> Favourites</h2>
+            <div class="card list">${favs.map(miniRow).join('') || '<div class="empty small">Tap ☆ on any document to keep it here.</div>'}</div></section>
+          <section><h2 class="section-title">Recently viewed</h2>
+            <div class="card list">${recent.map(miniRow).join('') || '<div class="empty small">Documents you open will show up here.</div>'}</div></section>
+        </div>
       </div>`;
   }
   function viewFolder(fid) {
     const f = S.folder(fid); if (!f) return notFound();
     const docs = S.visibleDocs(S.me()).filter((d) => d.folder === fid).sort((a, b) => a.title.localeCompare(b.title));
     return `<a href="#/refer" class="small">← Refer</a>
-      <h1>${f.icon} ${esc(f.name)}</h1>
+      <h1><span class="tile-ico h1-ico">${f.icon}</span> ${esc(f.name)}</h1>
       <div class="card list">${docs.map((d) => fileRow(d)).join('') || '<div class="empty">Nothing here for your team.</div>'}</div>`;
   }
   function bindKnow() {
@@ -341,6 +356,7 @@
         <h1>${esc(d.title)}</h1>
         <p class="meta">${esc(d.type)} · v${esc(v.v)} · Updated ${fmtDate(v.date)}</p>
         <div class="row doc-actions">
+          <button class="btn btn-sm btn-ghost fav-toggle ${S.isFav(me, d.id) ? 'on' : ''}" data-id="${d.id}" type="button" aria-pressed="${S.isFav(me, d.id)}">${S.isFav(me, d.id) ? '★ Favourite' : '☆ Favourite'}</button>
           <button class="btn btn-sm btn-ghost" type="button" onclick="window.print()">⤓ PDF</button>
           <button class="btn btn-sm btn-ghost" id="docQuestion" type="button">Question?</button>
           ${S.isAdmin(me) ? `<a class="btn btn-sm btn-ghost" href="#/manage/doc/${d.id}">Manage</a>` : ''}
@@ -353,6 +369,7 @@
       </article></div>`;
   }
   function bindDoc(id) {
+    if (S.visibleDocs(S.me()).includes(S.doc(id))) S.markViewed(S.me(), id);
     const b = $('#docQuestion'); if (b) b.addEventListener('click', () => suggestModal('About "' + S.doc(id).title + '": ', 'question'));
   }
 
