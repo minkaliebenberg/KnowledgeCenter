@@ -1325,7 +1325,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   const fileRow = (d, snippet) => {
     const v = S.current(d);
     return `<a class="list-row" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span>
-      <span class="grow"><strong>${esc(d.title)}</strong>${S.isRecentlyUpdated(d) ? ' <span class="upd">Updated</span>' : ''}<span class="sub">${snippet || esc(d.type)}</span></span>
+      <span class="grow"><strong>${esc(d.title)}</strong>${S.isRecentlyUpdated(d) ? ` <span class="upd">${S.current(d).type === 'initial' ? 'New' : 'Updated'}</span>` : ''}<span class="sub">${snippet || esc(d.type)}</span></span>
       <span class="muted small nowrap">${fmtDate(v.date)}</span>${starBtn(d)}</a>`;
   };
   const miniRow = (d) => `<a class="list-row mini" href="#/refer/doc/${d.id}"><span class="row-ico plain">${typeIcon(d.type)}</span><span class="grow"><strong>${esc(d.title)}</strong></span>${starBtn(d)}</a>`;
