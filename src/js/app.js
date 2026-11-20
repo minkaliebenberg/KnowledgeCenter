@@ -140,7 +140,7 @@
         <span class="grow"><strong>${esc(it.m.title)}</strong><span class="sub">${S.STAGE_LABEL[it.m.stage]} · ${it.m.minutes} min</span></span><span class="btn btn-sm btn-ghost">Start</span></a>`;
 
   const noticeRow = (n) => `<a class="list-row" href="#/learn/answer/${n.id}"><span class="row-ico warn">?</span>
-      <span class="grow"><strong>Your question has an answer</strong><span class="sub">“${esc(n.sub.text)}” · 1 min</span></span><span class="btn btn-sm">Read</span></a>`;
+      <span class="grow"><span class="notice-title">Your question has an answer</span><span class="sub">“${esc(n.sub.text)}” · 1 min</span></span><span class="btn btn-sm">Read</span></a>`;
   function viewAnswerNotice(id) {
     const me = S.me();
     const n = (S.state.notices || []).find((x) => x.id === id && x.user === me.id);
@@ -155,7 +155,7 @@
           <p class="meta">You asked on ${fmtDate(askedOn)}${sub.type === 'ask' ? ', when Ask couldn\'t find an answer' : ''}. L&amp;D added this on ${fmtDate(a.date)}.</p></div>
         <div class="answer-box">${md(a.text)}</div>
         ${a.ref ? `<p>Source: <a href="${sourceHref(a)}">${esc(a.label)}${a.v ? ' · v' + esc(a.v) : ''}</a></p>` : ''}
-        ${n.read ? `<div class="result ok">✓ Read ${fmtDate(n.readOn)}</div>` : '<button class="btn" id="gotIt" type="button">Got it</button>'}
+        ${n.read ? `<div class="result ok">✓ Read ${fmtDate(n.readOn)}</div>` : '<button class="btn tip-left" id="gotIt" type="button" data-tip="This answer will also stay in your question history under Ask, so you can find it again anytime.">Got it</button>'}
       </article></div>`;
   }
   function bindAnswerNotice(id) { const b = $('#gotIt'); if (b) b.addEventListener('click', () => { S.readNotice(id); toast('Saved to your question history'); location.hash = '#/learn'; }); }
@@ -414,12 +414,11 @@
     const x = S.system(id);
     if (!x || !S.systems(S.me()).includes(x)) return notFound();
     const G = (gid) => x.guides.find((g) => g.id === gid);
-    const owner = x.owner ? S.user(x.owner).name : x.ownerLabel;
     return `<a href="#/navigate" class="small">← Navigate</a>
       <div class="sys-head">
         <span class="mono lg">${esc(x.mono)}</span>
         <div class="grow"><h1>${esc(x.name)}</h1><p class="lead">${esc(x.tagline)}</p>
-          <p class="small muted"><strong>When to use it:</strong> ${esc(x.when)}<br><strong>Owner:</strong> ${esc(owner)}</p></div>
+          <p class="small muted"><strong>When to use it:</strong> ${esc(x.when)}</p></div>
         <a class="btn" href="${esc(x.url)}" target="_blank" rel="noopener">Open ${esc(x.name)} ↗</a>
       </div>
       <h2 class="section-title">Start here</h2>
@@ -461,6 +460,12 @@
   const fmtAt = (at) => { const d = new Date(at); return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' }); };
   const sourceHref = (src) => { if (src.kind === 'doc') return '#/refer/doc/' + src.ref; const [sid, gid] = src.ref.split(':'); return '#/navigate/' + sid + '/' + gid; };
   const STATUS_TAG = { answered: 'tag-ok', updated: 'tag-ok', requested: 'tag-gold', closed: 'tag-muted' };
+  const STATUS_TIP = {
+    answered: 'Ask found the answer in our current documents.',
+    requested: 'Ask couldn\'t find an answer, so your question was sent to L&D. When an answer is added, you\'ll see it here and in your Learn to-do list.',
+    updated: 'Ask couldn\'t answer this at first. L&D has since added an answer.',
+    closed: 'L&D reviewed this question and closed it. Any note from L&D is shown below.',
+  };
   const statusTag = (e) => { const st = S.askStatus(e); return `<span class="tag ${STATUS_TAG[st.key]}">${esc(st.label)}</span>`; };
 
   /* One question in a history list (employee, supervisor and L&D views share this) */
@@ -481,7 +486,7 @@
       body = '<p class="log-a muted">No answer found in the documentation yet. L&amp;D has been asked to add one.</p>';
     }
     return `<div class="log-row">
-      <div class="row spread log-top"><strong class="log-q">${esc(e.q)}</strong><span class="tag ${STATUS_TAG[st.key]}">${esc(st.label)}</span></div>
+      <div class="row spread log-top"><strong class="log-q">${esc(e.q)}</strong><span class="tag ${STATUS_TAG[st.key]}" tabindex="0" data-tip="${esc(STATUS_TIP[st.key])}" aria-label="${esc(st.label + ': ' + STATUS_TIP[st.key])}">${esc(st.label)}</span></div>
       <div class="sub">${showUser ? esc(u.name) + ' · ' : ''}${fmtAt(e.at)}${e.helpful === true ? ' · Marked helpful' : ''}${e.helpful === false ? ' · <span class="nh">Marked not helpful</span>' : ''}</div>
       ${body}
     </div>`;
@@ -540,7 +545,7 @@
     const shown = filterLog(list, histFilter);
     return `<div class="narrow"><a href="#/ask" class="small">← Ask</a>
       <h1>Your questions</h1>
-      <p class="muted small">Everything you've asked, with the answer and its source. Questions Ask couldn't answer are sent to L&amp;D as requests. When an answer is added, it shows up here and in your Learn to-do list. Your team lead and L&amp;D can also see this history.</p>
+      <p class="muted small">Everything you've asked, with the answer and its source. Questions that could not be answered by Ask are sent to L&amp;D as requests. When an answer is added, it shows up here and in your Learn to-do list.</p>
       <div class="pill-row hist-filters">${HIST_FILTERS.map(([k, l]) => `<button class="chip ${histFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${filterLog(list, k).length}</span></button>`).join('')}</div>
       <div class="card list log">${shown.map((e) => logRow(e, false)).join('') || '<div class="empty">No questions yet.</div>'}</div></div>`;
   }
