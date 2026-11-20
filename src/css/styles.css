@@ -299,3 +299,27 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .upd { display: inline-block; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: .03em; color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); vertical-align: 1px; }
 @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } .two-col .section-title { margin-top: 20px; } }
 .h1-ico { font-size: .8em; vertical-align: 2px; margin: 0 4px 0 0; }
+
+/* ---- Ask: history & log ---- */
+.ask-top { text-align: right; margin-bottom: 4px; }
+.fb { margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border); font-size: 13px; color: var(--muted); }
+.log .log-row { padding: 16px 18px; border-top: 1px solid var(--border); }
+.log .log-row:first-child { border-top: 0; }
+.log-top { flex-wrap: nowrap; align-items: flex-start; }
+.log-q { font-weight: 600; }
+.log-row .sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.log-a { margin: 8px 0; font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nh { color: var(--danger); }
+.tag { flex: none; display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: 11px; font-weight: 500; letter-spacing: .03em; white-space: nowrap; }
+.tag-ok { color: var(--ok); box-shadow: inset 0 0 0 1px var(--ok); }
+.tag-gold { color: var(--gold); box-shadow: inset 0 0 0 1px var(--gold); }
+.tag-ink { color: var(--text); box-shadow: inset 0 0 0 1px var(--text); }
+.tag-muted { color: var(--muted); box-shadow: inset 0 0 0 1px var(--border); }
+.chip-sm { font-size: 12px; padding: 3px 10px; }
+.hist-filters { margin: 14px 0 12px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; display: flex; flex-direction: column; }
+.stat-n { font-family: var(--serif); font-size: 1.8rem; font-weight: 500; line-height: 1.1; }
+.stat-l { font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.kcard.from-ask { box-shadow: inset 2px 0 0 var(--gold); }
+@media (max-width: 760px) { .stats { grid-template-columns: 1fr 1fr; } }

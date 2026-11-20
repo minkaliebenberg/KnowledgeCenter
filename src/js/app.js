@@ -4,7 +4,8 @@
      #/learn  #/learn/module/:id[/:step]  #/learn/update/:docId  #/learn/record
      #/refer   #/refer/f/:folderId   #/refer/doc/:id
      #/navigate   #/navigate/:systemId   #/navigate/:systemId/:guideId
-     #/ask
+     #/ask   #/ask/history
+     #/team/:userId/ask   #/manage/ask
      #/team   #/team/:userId
      #/manage (register)  #/manage/doc/:id  #/manage/doc/:id/v/:ver  #/manage/edit/:id  #/manage/roadmap
    ========================================================================== */
@@ -433,20 +434,44 @@
   /* =========================================================================
      ASK (simulated)
      ========================================================================= */
-  let askLog = [];
+  let askLog = [];   // this session's chat; every question is also saved to the permanent log
   const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'How do I merge tickets?'];
-  function answerHtml(r) {
+  const fmtAt = (at) => { const d = new Date(at); return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' }); };
+  const sourceHref = (src) => { if (src.kind === 'doc') return '#/refer/doc/' + src.ref; const [sid, gid] = src.ref.split(':'); return '#/navigate/' + sid + '/' + gid; };
+  const STATUS_TAG = { answered: 'tag-ok', sent: 'tag-gold', roadmap: 'tag-ink', reviewed: 'tag-muted' };
+  const statusTag = (e) => { const st = S.askStatus(e); return `<span class="tag ${STATUS_TAG[st.key]}">${esc(st.label)}</span>`; };
+
+  /* One question in a history list (employee, supervisor and L&D views share this) */
+  function logRow(e, showUser) {
+    const u = S.user(e.user);
+    return `<div class="log-row">
+      <div class="row spread log-top"><strong class="log-q">${esc(e.q)}</strong>${statusTag(e)}</div>
+      <div class="sub">${showUser ? esc(u.name) + ' · ' : ''}${fmtAt(e.at)}${e.helpful === true ? ' · Marked helpful' : ''}${e.helpful === false ? ' · <span class="nh">Marked not helpful</span>' : ''}</div>
+      ${e.found ? `<p class="log-a">${esc(e.answer || '')}</p>` : '<p class="log-a muted">No answer found in the documentation.</p>'}
+      ${e.note ? `<p class="log-a small"><em>“${esc(e.note)}”</em></p>` : ''}
+      ${(e.sources || []).length ? `<div class="pill-row">${e.sources.map((src) => `<a class="chip chip-sm" href="${sourceHref(src)}">${src.kind === 'guide' ? '↗ ' : ''}${esc(src.label)}${src.v ? ' · v' + esc(src.v) : ''}</a>`).join('')}</div>` : ''}
+    </div>`;
+  }
+
+  function answerHtml(x) {
+    const r = x.r, e = x.entry;
     if (!r.found) return `<p>I couldn't find that in our documents, so I won't guess.</p>
-      <button class="btn btn-sm btn-ghost send-ld" type="button">Send question to L&amp;D</button>`;
+      <p class="small muted">I've sent your question to L&amp;D so it can be added. You can follow it in <a href="#/ask/history">your history</a>.</p>`;
     const t = r.top;
-    if (t.guide) return `<ol class="steps small-steps">${t.guide.steps.map((x) => `<li>${md(x).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol><p class="source">Source: <a href="#/navigate/${t.sys.id}/${t.guide.id}">${esc(t.sys.name)} › ${esc(t.guide.title)}</a></p>`;
-    return `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
+    const body = t.guide
+      ? `<ol class="steps small-steps">${t.guide.steps.map((st) => `<li>${md(st).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol><p class="source">Source: <a href="#/navigate/${t.sys.id}/${t.guide.id}">${esc(t.sys.name)} › ${esc(t.guide.title)}</a></p>`
+      : `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
+    const fb = e.helpful === null
+      ? `<div class="fb">Did this help? <button class="link-btn fb-btn" data-id="${e.id}" data-v="1" type="button">Yes</button> · <button class="link-btn fb-btn" data-id="${e.id}" data-v="0" type="button">No</button></div>`
+      : e.helpful ? '<div class="fb">Thanks for the feedback.</div>' : '<div class="fb">Thanks. I\'ve sent this to L&amp;D so the answer can be improved.</div>';
+    return body + fb;
   }
   function viewAsk() {
     return `<div class="narrow ask">
+      <div class="ask-top"><a href="#/ask/history" class="small">Your question history →</a></div>
       <div class="chat" id="chat" aria-live="polite">
-        ${askLog.length ? '' : `<div class="ask-hello"><h1>What can I help you find?</h1><p class="muted">Answers come from our current documents, with a link to the source.</p></div>`}
-        ${askLog.map((x) => `<div class="msg user">${esc(x.q)}</div><div class="msg bot" data-q="${esc(x.q)}">${answerHtml(x.r)}</div>`).join('')}
+        ${askLog.length ? '' : `<div class="ask-hello"><h1>What can I help you find?</h1><p class="muted">Answers come from our current documents and guides, with a link to the source.</p></div>`}
+        ${askLog.map((x) => `<div class="msg user">${esc(x.q)}</div><div class="msg bot">${answerHtml(x)}</div>`).join('')}
       </div>
       ${askLog.length ? '' : `<div class="pill-row center">${SUGGESTED.map((q) => `<button class="chip ask-chip" type="button">${esc(q)}</button>`).join('')}</div>`}
       <form class="chat-input" id="askForm"><input type="text" id="askInput" placeholder="Ask a question" aria-label="Your question" autocomplete="off"><button class="btn" type="submit">Ask</button></form>
@@ -454,15 +479,39 @@
     </div>`;
   }
   function bindAsk() {
-    const go = (q) => { if (!q.trim()) return; askLog.push({ q, r: S.ask(S.me(), q) }); rerender(); setTimeout(() => { const c = $('#chat'); if (c.lastElementChild) c.lastElementChild.scrollIntoView({ block: 'nearest' }); $('#askInput').focus(); }, 20); };
+    const go = (q) => {
+      if (!q.trim()) return;
+      const r = S.ask(S.me(), q);
+      const entry = S.logAsk(S.me(), q, r);
+      askLog.push({ q, r, entry });
+      rerender();
+      setTimeout(() => { const c = $('#chat'); if (c.lastElementChild) c.lastElementChild.scrollIntoView({ block: 'nearest' }); $('#askInput').focus(); }, 20);
+    };
     $('#askForm').addEventListener('submit', (e) => { e.preventDefault(); go($('#askInput').value); });
     $$('.ask-chip').forEach((b) => b.addEventListener('click', () => go(b.textContent)));
     const clr = $('#clearChat'); if (clr) clr.addEventListener('click', () => { askLog = []; rerender(); });
-    $$('.send-ld').forEach((b) => b.addEventListener('click', () => {
-      S.submit(S.me().id, 'question', b.closest('.msg').dataset.q + ' (from Ask — no answer found)');
-      b.replaceWith(Object.assign(document.createElement('span'), { className: 'badge ok', textContent: '✓ Sent' }));
+    $$('.fb-btn').forEach((b) => b.addEventListener('click', () => {
+      const e = S.rateAsk(b.dataset.id, b.dataset.v === '1');
+      askLog.forEach((x) => { if (x.entry.id === e.id) x.entry = e; });
+      rerender();
     }));
   }
+
+  /* Employee's own history */
+  let histFilter = 'all';
+  const HIST_FILTERS = [['all', 'All'], ['answered', 'Answered'], ['open', 'Waiting on L&D']];
+  const filterLog = (list, f) => list.filter((e) => f === 'all' || (f === 'answered' ? S.askStatus(e).key === 'answered' : S.askStatus(e).key !== 'answered'));
+  function viewAskHistory() {
+    const me = S.me();
+    const list = S.askHistory(me.id);
+    const shown = filterLog(list, histFilter);
+    return `<div class="narrow"><a href="#/ask" class="small">← Ask</a>
+      <h1>Your questions</h1>
+      <p class="muted small">Everything you've asked, with the answer and its source. Questions Ask couldn't answer go to L&amp;D, and you can follow them here. Your team lead and L&amp;D can also see this history.</p>
+      <div class="pill-row hist-filters">${HIST_FILTERS.map(([k, l]) => `<button class="chip ${histFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${filterLog(list, k).length}</span></button>`).join('')}</div>
+      <div class="card list log">${shown.map((e) => logRow(e, false)).join('') || '<div class="empty">No questions yet.</div>'}</div></div>`;
+  }
+  function bindAskHistory() { $$('.hist-filters .chip').forEach((c) => c.addEventListener('click', () => { histFilter = c.dataset.f; rerender(); })); }
 
   /* =========================================================================
      MY TEAM
@@ -496,7 +545,22 @@
       <div class="card"><div class="row spread"><strong>Progress</strong><span class="muted">${p.done} of ${p.total}</span></div><div class="big-bar">${bar(p.pct)}<span class="pct">${p.pct}%</span></div></div>
       <h2 class="section-title">To do (${todo.length})</h2>
       <div class="card list">${todo.map((it) => `<div class="list-row"><span class="row-ico ${it.kind === 'update' ? 'warn' : ''}">${it.kind === 'update' ? '!' : '▶'}</span><span class="grow">${esc(it.kind === 'update' ? it.x.doc.title + ' v' + it.x.version.v : it.m.title)}<span class="sub">${it.kind === 'update' ? 'Update' : S.STAGE_LABEL[it.m.stage]}</span></span></div>`).join('') || '<div class="empty">All caught up ✓</div>'}</div>
+      ${askSection(u)}
       <h2 class="section-title">Learning record</h2><div class="card">${recordTable(u)}</div>`;
+  }
+  function askSection(u) {
+    const list = S.askHistory(u.id);
+    const open = list.filter((e) => S.askStatus(e).key !== 'answered').length;
+    return `<div class="row spread section-title"><h2 style="margin:0">Questions asked <span class="muted small">${list.length} total${open ? ' · ' + open + ' waiting on L&amp;D' : ''}</span></h2>${list.length > 3 ? `<a class="small" href="#/team/${u.id}/ask">View all</a>` : ''}</div>
+      <div class="card list log">${list.slice(0, 3).map((e) => logRow(e, false)).join('') || '<div class="empty">No questions asked yet.</div>'}</div>`;
+  }
+  function viewMemberAsk(id) {
+    const me = S.me(); const u = S.user(id);
+    if (!u || !S.team(me).includes(u)) return notFound();
+    const list = S.askHistory(u.id);
+    return `<div class="narrow"><a href="#/team/${u.id}" class="small">← ${esc(u.name)}</a>
+      <h1>${esc(firstName(u))}'s questions</h1>
+      <div class="card list log">${list.map((e) => logRow(e, false)).join('') || '<div class="empty">No questions asked yet.</div>'}</div></div>`;
   }
   function bindMember(id) {
     const x = $('#xfer'); if (!x) return;
@@ -517,7 +581,8 @@
     const reqN = S.state.submissions.filter((s) => s.status === 'new').length;
     return `<div class="row spread manage-head"><div class="tabs">
         <a href="#/manage" class="${active === 'register' ? 'active' : ''}">Register</a>
-        <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap${reqN ? `<span class="count">${reqN}</span>` : ''}</a></div>
+        <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap${reqN ? `<span class="count">${reqN}</span>` : ''}</a>
+        <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a></div>
         <button class="btn btn-sm" id="newDocBtn" type="button">+ New document</button></div>`;
   }
 
@@ -714,11 +779,12 @@
   const prioClass = { High: 'danger', Med: 'warn', Low: '' };
   function viewRoadmap() {
     const reqs = S.state.submissions.filter((s) => s.status === 'new');
-    const typeLabel = { question: 'Question', topic: 'Topic idea', request: 'Doc request', problem: 'Problem', content: 'SME content' };
+    const typeLabel = { question: 'Question', topic: 'Topic idea', request: 'Doc request', problem: 'Problem', content: 'SME content', ask: 'From Ask · no answer found' };
     return manageTabs('roadmap') + `
       <div class="board">
         <div class="col requests"><div class="col-head">Requests <span class="count">${reqs.length}</span></div>
-          ${reqs.map((s) => `<div class="kcard"><span class="sub">${typeLabel[s.type] || s.type} · ${esc(S.user(s.user).name)} · ${fmtDate(s.date)}</span><p>${esc(s.text)}</p>
+          ${reqs.map((s) => `<div class="kcard ${s.type === 'ask' ? 'from-ask' : ''}"><span class="sub">${s.type === 'ask' && s.note && /not helpful/.test(s.note) ? 'From Ask · answer not helpful' : typeLabel[s.type] || s.type}${s.type === 'ask' ? '' : ' · ' + esc(S.user(s.user).name)} · ${fmtDate(s.date)}</span><p>${esc(s.text)}</p>
+            ${s.type === 'ask' ? `<span class="sub">Asked ${s.askers.length}× by ${[...new Set(s.askers.map((a) => a.user))].map((id) => esc(firstName(S.user(id)))).join(', ')}</span>${s.note ? `<span class="sub"><em>${esc(s.note)}</em></span>` : ''}` : ''}
             <div class="row"><button class="btn btn-sm req-add" data-id="${s.id}" type="button">Add to roadmap</button><button class="link-btn small req-dismiss" data-id="${s.id}" type="button">Dismiss</button></div></div>`).join('') || '<p class="muted small">No new requests.</p>'}
         </div>
         ${COLS.map(([k, l]) => {
@@ -768,6 +834,39 @@
     $$('.req-dismiss').forEach((b) => b.addEventListener('click', () => { S.state.submissions.find((x) => x.id === b.dataset.id).status = 'declined'; S.save(); rerender(); }));
   }
 
+  /* ---------- Ask log: every question across the company ---------- */
+  let logFilter = 'all', logQuery = '';
+  function viewAskLog() {
+    const all = S.askHistory();
+    const answered = all.filter((e) => e.found).length;
+    const notFoundN = all.filter((e) => !e.found).length;
+    const notHelpful = all.filter((e) => e.helpful === false).length;
+    const rate = all.length ? Math.round((answered / all.length) * 100) : 0;
+    const filters = [['all', 'All', all.length], ['answered', 'Answered', answered], ['nf', 'No answer found', notFoundN], ['nh', 'Not helpful', notHelpful]];
+    const q = logQuery.toLowerCase();
+    const shown = all.filter((e) => (logFilter === 'all' || (logFilter === 'answered' && e.found) || (logFilter === 'nf' && !e.found) || (logFilter === 'nh' && e.helpful === false))
+      && (!q || (e.q + ' ' + S.user(e.user).name).toLowerCase().includes(q)));
+    return manageTabs('ask') + `
+      <div class="stats">
+        <div class="stat"><span class="stat-n">${all.length}</span><span class="stat-l">Questions</span></div>
+        <div class="stat"><span class="stat-n">${rate}%</span><span class="stat-l">Answered</span></div>
+        <div class="stat"><span class="stat-n">${notFoundN}</span><span class="stat-l">No answer found</span></div>
+        <div class="stat"><span class="stat-n">${notHelpful}</span><span class="stat-l">Marked not helpful</span></div>
+      </div>
+      <div class="row toolbar">
+        <input type="search" id="logSearch" placeholder="Search questions or people" value="${esc(logQuery)}">
+        <div class="pill-row">${filters.map(([k, l, n]) => `<button class="chip ${logFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${n}</span></button>`).join('')}</div>
+      </div>
+      <div class="card list log">${shown.map((e) => logRow(e, true)).join('') || '<div class="empty">No questions match.</div>'}</div>`;
+  }
+  function bindAskLog() {
+    bindNewDoc();
+    const inp = $('#logSearch');
+    inp.addEventListener('change', () => { logQuery = inp.value; rerender(); });
+    inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') { logQuery = inp.value; rerender(); } });
+    $$('.toolbar .chip').forEach((c) => c.addEventListener('click', () => { logFilter = c.dataset.f; rerender(); }));
+  }
+
   function notFound() { return `<div class="card empty">Page not found. <a href="#/learn">Go to Learn</a></div>`; }
   function rerender() { route._keepScroll = true; route(); route._keepScroll = false; }
 
@@ -794,9 +893,13 @@
       if (c) html = viewGuide(b, c);
       else if (b) html = viewSystem(b);
       else html = viewNavigate();
-    } else if (a === 'ask') { html = viewAsk(); bind = bindAsk; }
+    } else if (a === 'ask') {
+      if (b === 'history') { html = viewAskHistory(); bind = bindAskHistory; }
+      else { html = viewAsk(); bind = bindAsk; }
+    }
     else if (a === 'team') {
       if (!S.canSeeTeam(me)) html = notFound();
+      else if (b && c === 'ask') html = viewMemberAsk(b);
       else if (b) { html = viewMember(b); bind = () => bindMember(b); }
       else html = viewTeam();
     } else if (a === 'manage') {
@@ -805,6 +908,7 @@
       else if (b === 'doc') { html = viewManageDoc(c); bind = () => bindManageDoc(c); }
       else if (b === 'edit') { html = viewEdit(c); bind = () => bindEdit(c); }
       else if (b === 'roadmap') { html = viewRoadmap(); bind = bindRoadmap; }
+      else if (b === 'ask') { html = viewAskLog(); bind = bindAskLog; }
       else { html = viewRegister(); bind = bindRegister; }
     } else html = notFound();
 
