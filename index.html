@@ -1742,7 +1742,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     const shown = filterLog(list, histFilter);
     return `<div class="narrow"><a href="#/ask" class="small">← Ask</a>
       <h1>Your questions</h1>
-      <p class="muted small">Everything you've asked, with the answer and its source. Questions that could not be answered by Ask are sent to L&amp;D as requests. When an answer is added, it shows up here and in your Learn to-do list.</p>
+      <p class="muted small">Everything you've asked, with the answer and its source. Questions that could not be answered by Ask are sent to L&amp;D as requests. When an answer is added, it shows up here and in your Learn to-do list. Your team lead and L&amp;D can also see this history.</p>
       <div class="pill-row hist-filters">${HIST_FILTERS.map(([k, l]) => `<button class="chip ${histFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${filterLog(list, k).length}</span></button>`).join('')}</div>
       <div class="card list log">${shown.map((e) => logRow(e, false)).join('') || '<div class="empty">No questions yet.</div>'}</div></div>`;
   }
