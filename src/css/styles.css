@@ -1,12 +1,13 @@
 /* CrownRing Knowledge Center — prototype styles.
    Colour tokens on :root so the developer can map them to the internal site's theme. */
-/* Palette: "Ivory, Ink & Champagne" — Off-white #F5F3EE, Paper #FAF7F0, Stone #E3E1DC, Warm grey #74726E,
-   Navy ink #29324A, Champagne gold #B89B5E (used sparingly) */
+/* Palette: "White, Ink & Champagne" — White #FFFFFF cards on a very light neutral #F7F7F8,
+   borders #E5E5E9, grey text #6B6E78, Navy ink #29324A, Champagne gold #B89B5E (used sparingly).
+   White-based for long reading sessions (less eye strain than tinted off-whites). */
 :root {
-  --bg: #f5f3ee; --surface: #faf7f0; --surface-2: #efeeea; --text: #29324a; --muted: #74726e; --border: #e3e1dc;
-  --accent: #29324a; --accent-hover: #3b4562; --on-accent: #f6f5f2; --accent-strong: #29324a; --accent-soft: #eeebe4;
-  --gold: #b89b5e; --mark: #b89b5e; --navy: #29324a; --slate: #29324a; --cream: #f6f5f2;
-  --header-bg: #faf7f0; --header-text: #29324a; --header-muted: #74726e; --header-hover: #efeeea; --demo-bg: #29324a; --demo-text: #e9e2d4;
+  --bg: #f7f7f8; --surface: #ffffff; --surface-2: #f1f1f4; --text: #29324a; --muted: #6b6e78; --border: #e5e5e9;
+  --accent: #29324a; --accent-hover: #3b4562; --on-accent: #f6f5f2; --accent-strong: #29324a; --accent-soft: #f4efe4;
+  --gold: #b89b5e; --mark: #b89b5e; --navy: #29324a; --slate: #29324a; --cream: #ffffff;
+  --header-bg: #ffffff; --header-text: #29324a; --header-muted: #6b6e78; --header-hover: #f1f1f4; --demo-bg: #29324a; --demo-text: #e9e2d4;
   --ok: #5c6f5a; --ok-soft: #e9ece3; --warn: #8a6f3c; --warn-soft: #f2eadb; --info: #4d5566; --info-soft: #ebebec;
   --danger: #8f4a44; --danger-soft: #f3e4e0;
   --radius: 10px; --shadow: 0 1px 2px rgba(31,36,48,.03), 0 4px 18px rgba(31,36,48,.04);
@@ -29,7 +30,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* demo bar + header */
 .demo-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: center; padding: 5px 16px; background: var(--demo-bg); color: var(--demo-text); font-size: 12px; }
-.demo-bar select { width: auto; max-width: 100%; background: #f6f5f2; color: #29324a; border: 0; border-radius: 6px; padding: 2px 6px; font-size: 12px; }
+.demo-bar select { width: auto; max-width: 100%; background: #ffffff; color: #29324a; border: 0; border-radius: 6px; padding: 2px 6px; font-size: 12px; }
 .demo-bar .link-btn { color: var(--demo-text); font-size: 12px; }
 .link-btn { background: none; border: 0; padding: 0; cursor: pointer; color: var(--accent-strong); }
 .link-btn:hover { text-decoration: underline; }
@@ -347,3 +348,15 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .badge.eff-med   { background: #b4cdb1; color: #2c4a35; }
 .badge.eff-large { background: #7fa287; color: #fbfaf6; }
 .badge.eff-major { background: #4e7559; color: #fbfaf6; }
+
+/* ---- Tooltips (hover / keyboard focus) ---- */
+[data-tip] { position: relative; }
+[data-tip]:hover::after, [data-tip]:focus-visible::after {
+  content: attr(data-tip); position: absolute; z-index: 30; right: 0; top: calc(100% + 8px);
+  width: max-content; max-width: 260px; padding: 8px 11px; border-radius: 8px;
+  background: var(--text); color: #fff; font-size: 12.5px; font-weight: 400; line-height: 1.45; letter-spacing: 0; text-transform: none;
+  white-space: normal; text-align: left; box-shadow: 0 6px 20px rgba(20,24,36,.18); pointer-events: none;
+}
+.tip-left[data-tip]:hover::after, .tip-left[data-tip]:focus-visible::after { right: auto; left: 0; }
+.tag[data-tip] { cursor: help; }
+.notice-title { font-style: italic; font-weight: 500; }
