@@ -39,15 +39,15 @@
     types: ['SOP', 'Policy', 'Manual', 'Quick Reference', 'Process / Workflow', 'Directory', 'Form', 'Video', 'Decision Map', 'Glossary'],
 
     users: [
-      { id: 'u1', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: null, start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u4', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: null, start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u2', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: null, start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
-      { id: 'u8', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: null, start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
-      { id: 'u6', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: null, start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
-      { id: 'u9', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: null, start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
-      { id: 'u3', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
-      { id: 'u7', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
-      { id: 'u5', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
+      { id: 'u1', email: 'pshah@crownring.com', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: null, start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u4', email: 'jreyes@crownring.com', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: null, start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u2', email: 'mlee@crownring.com', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: null, start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
+      { id: 'u8', email: 'amartin@crownring.com', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: null, start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
+      { id: 'u6', email: 'snovak@crownring.com', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: null, start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
+      { id: 'u9', email: 'tbrooks@crownring.com', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: null, start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
+      { id: 'u3', email: 'dokafor@crownring.com', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
+      { id: 'u7', email: 'rtran@crownring.com', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
+      { id: 'u5', email: 'mliebenberg@crownring.com', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
     ],
 
     /* ---------------------------------------------------------------------------

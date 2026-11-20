@@ -978,19 +978,18 @@
     const users = S.state.users;
     const q = pplQuery.toLowerCase();
     const shown = users.filter((u) => (pplInactive ? !S.active(u) : S.active(u)) && (pplDept === 'all' || u.dept === pplDept)
-      && (!q || (u.name + ' ' + (u.title || '')).toLowerCase().includes(q))).sort((a, b) => a.name.localeCompare(b.name));
+      && (!q || (u.name + ' ' + (u.title || '') + ' ' + (u.email || '')).toLowerCase().includes(q))).sort((a, b) => a.name.localeCompare(b.name));
     const inactiveN = users.filter((u) => !S.active(u)).length;
     return manageTabs('people') + `
-      <p class="small muted sync-note">In the full build, names, job titles, departments and managers sync from the internal website, so new hires appear here automatically. You only set what's specific to the Knowledge Center.</p>
       <h2 class="section-title">Departments</h2>
       <div class="dept-grid">${S.state.departments.map((d) => {
         const lead = d.lead && S.user(d.lead);
         const n = users.filter((u) => S.active(u) && u.dept === d.id).length;
         return `<button class="dept-card" data-id="${d.id}" type="button"><strong>${esc(d.name)}</strong><span class="sub">Lead: ${lead ? esc(lead.name) : '—'}</span><span class="sub">${n} ${n === 1 ? 'person' : 'people'}</span></button>`;
       }).join('')}<button class="dept-card add" id="addDept" type="button">+ Add department</button></div>
-      <div class="row spread section-title"><h2 style="margin:0">People</h2><button class="btn btn-sm" id="addPerson" type="button">+ Add person</button></div>
+      <div class="row spread section-title"><h2 style="margin:0">People</h2><div class="row"><button class="btn btn-sm btn-ghost" id="importPeople" type="button">Import from Excel / CSV</button><button class="btn btn-sm" id="addPerson" type="button">+ Add person</button></div></div>
       <div class="row toolbar">
-        <input type="search" id="pplSearch" placeholder="Search by name or title" value="${esc(pplQuery)}">
+        <input type="search" id="pplSearch" placeholder="Search by name, title or email" value="${esc(pplQuery)}">
         <div class="pill-row">${[{ id: 'all', name: 'All' }, ...S.state.departments].map((d) => `<button class="chip ${pplDept === d.id && !pplInactive ? 'active' : ''}" data-d="${d.id}" type="button">${esc(d.name)}</button>`).join('')}
           ${inactiveN ? `<button class="chip ${pplInactive ? 'active' : ''}" data-d="inactive" type="button">Inactive <span class="chip-n">${inactiveN}</span></button>` : ''}</div>
       </div>
@@ -998,7 +997,7 @@
       ${shown.map((u) => {
         const lead = u.role === 'admin' ? null : S.leadOf(u);
         const p = S.progress(u);
-        return `<tr class="click" data-id="${u.id}"><td><strong>${esc(u.name)}</strong>${u.sme ? ' <span class="tag tag-muted">SME</span>' : ''}<br><span class="muted small">${esc(u.title || '')}</span></td>
+        return `<tr class="click" data-id="${u.id}"><td><strong>${esc(u.name)}</strong>${u.sme ? ' <span class="tag tag-muted">SME</span>' : ''}<br><span class="muted small">${esc(u.title || '')}${u.email ? ' · ' + esc(u.email) : ''}</span></td>
           <td>${esc(S.dept(u.dept))}</td>
           <td>${lead ? esc(lead.name) + (u.supervisor ? '' : ' <span class="muted small">(dept. lead)</span>') : '<span class="muted">—</span>'}</td>
           <td>${ACCESS[u.role]}</td><td class="nowrap">${fmtDate(u.start)}</td>
@@ -1011,9 +1010,10 @@
     u = u || { name: '', title: '', dept: S.state.departments[0].id, supervisor: null, role: 'employee', start: S.state.today };
     const leadOpts = (dept) => { const dl = S.deptLead(dept); return `<option value="">Department lead${dl ? ' (' + esc(dl.name) + ')' : ''}</option>` + S.leads().filter((x) => x.id !== u.id).map((x) => `<option value="${x.id}" ${u.supervisor === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join(''); };
     openModal(`<h2 id="modalTitle">${isNew ? 'Add person' : esc(u.name)}</h2>
-      ${isNew ? '<p class="small muted">In the full build this happens automatically when someone is added to the internal website.</p>' : ''}
+      ${isNew ? '<p class="small muted">They sign in with their CrownRing Microsoft account. Only people on this list can access the Knowledge Center.</p>' : ''}
       <div class="grid-2col">
         <div class="field"><label for="pName">Name</label><input type="text" id="pName" value="${esc(u.name)}"></div>
+        <div class="field"><label for="pEmail">Work email</label><input type="text" id="pEmail" value="${esc(u.email || '')}" placeholder="name@crownring.com"></div>
         <div class="field"><label for="pTitle">Job title</label><input type="text" id="pTitle" value="${esc(u.title || '')}"></div>
         <div class="field"><label for="pDept">Department</label><select id="pDept">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
         <div class="field"><label for="pLead">Team lead</label><select id="pLead">${leadOpts(u.dept)}</select></div>
@@ -1031,7 +1031,10 @@
       });
       $('#pSave', card).addEventListener('click', () => {
         const name = $('#pName', card).value.trim(); if (!name) return $('#pName', card).focus();
-        const saved = S.savePerson(isNew ? null : u.id, { name, title: $('#pTitle', card).value.trim(), dept: dept.value, supervisor: $('#pLead', card).value || null,
+        const email = $('#pEmail', card).value.trim().toLowerCase();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Add a valid work email'); return $('#pEmail', card).focus(); }
+        if (S.state.users.some((x) => x.email === email && x.id !== u.id)) { toast('Someone already uses that email'); return $('#pEmail', card).focus(); }
+        const saved = S.savePerson(isNew ? null : u.id, { name, email, title: $('#pTitle', card).value.trim(), dept: dept.value, supervisor: $('#pLead', card).value || null,
           role: $('#pRole', card).value, start: $('#pStart', card).value.trim() || S.state.today, sme: $('#pSme', card).checked ? dept.value : null });
         closeModal();
         toast(isNew ? `${firstName(saved)} added · ${S.todo(saved).length} items in their to-do list` : 'Saved');
@@ -1040,7 +1043,7 @@
       const act = $('#pActive', card);
       if (act) act.addEventListener('click', () => {
         u.active = !S.active(u); S.save(); closeModal();
-        toast(S.active(u) ? 'Reactivated' : `${firstName(u)} deactivated · their records are kept`);
+        toast(S.active(u) ? 'Reactivated · they can sign in again' : `${firstName(u)} deactivated · they can't sign in, records are kept`);
         location.hash = '#/manage/people'; rerender();
       });
     });
@@ -1059,7 +1062,42 @@
       });
     });
   }
+  function importModal() {
+    const sample = 'Name, Email, Job title, Department, Team lead, Start date\nRiley Chen, rchen@crownring.com, Customer Experience Specialist, Noam Carver Team, , 2026-12-01';
+    openModal(`<h2 id="modalTitle">Import people</h2>
+      <p class="small muted">Paste rows from Excel, or choose a CSV file. Columns: <strong>Name, Email, Job title, Department, Team lead, Start date</strong>. Leave Team lead blank to use the department lead.</p>
+      <div class="field"><input type="file" id="iFile" accept=".csv,text/csv"></div>
+      <div class="field"><textarea id="iText" placeholder="${esc(sample)}"></textarea></div>
+      <div id="iPreview" class="small"></div>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="iGo" type="button" disabled>Import</button></div>`, (card) => {
+      const ta = $('#iText', card), prev = $('#iPreview', card), go = $('#iGo', card);
+      let rows = [];
+      const byName = (list, n) => list.find((x) => x.name.toLowerCase() === String(n || '').trim().toLowerCase());
+      const parse = () => {
+        const lines = ta.value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        rows = lines.map((l) => l.split(l.includes('\t') ? '\t' : ',').map((c) => c.trim()))
+          .filter((c) => !/^name$/i.test(c[0]))
+          .map(([name, email, title, dept, lead, start]) => {
+            const d = byName(S.state.departments, dept), ld = lead ? byName(S.state.users, lead) : null;
+            const em = (email || '').toLowerCase();
+            const err = !name ? 'Missing name' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? 'Invalid email' : S.state.users.some((x) => x.email === em) ? 'Already on the list' : !d ? 'Unknown department' : lead && !ld ? 'Unknown team lead' : '';
+            return { name, email: em, title: title || '', dept: d && d.id, supervisor: ld ? ld.id : null, start: start || S.state.today, err };
+          });
+        const ok = rows.filter((r) => !r.err);
+        prev.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Department</th><th></th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${r.dept ? esc(S.dept(r.dept)) : '—'}</td><td>${r.err ? `<span class="nh">${esc(r.err)}</span>` : '<span class="tag tag-ok">Ready</span>'}</td></tr>`).join('')}</tbody></table></div><p class="muted">${ok.length} of ${rows.length} ready to import.</p>` : '';
+        go.disabled = !ok.length; go.textContent = ok.length ? `Import ${ok.length}` : 'Import';
+      };
+      ta.addEventListener('input', parse);
+      $('#iFile', card).addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { ta.value = t; parse(); }); });
+      go.addEventListener('click', () => {
+        const ok = rows.filter((r) => !r.err);
+        ok.forEach((r) => S.savePerson(null, { name: r.name, email: r.email, title: r.title, dept: r.dept, supervisor: r.supervisor, role: 'employee', start: r.start }));
+        closeModal(); toast(`${ok.length} ${ok.length === 1 ? 'person' : 'people'} added · training lists created`); rerender();
+      });
+    });
+  }
   function bindPeople(openId) {
+    $('#importPeople').addEventListener('click', importModal);
     bindNewDoc();
     const inp = $('#pplSearch');
     inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') { pplQuery = inp.value; rerender(); } });
