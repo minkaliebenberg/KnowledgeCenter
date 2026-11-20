@@ -818,7 +818,7 @@
           const items = S.state.roadmap.filter((r) => r.status === k);
           return `<div class="col"><div class="col-head">${l} <span class="muted">${items.length}</span></div>
             ${items.map((r) => `<button class="kcard rm-item" data-id="${r.id}" type="button"><strong>${esc(r.title)}</strong>
-              <span class="pill-row"><span class="badge ${prioClass[r.priority]}">${r.priority}</span><span class="badge">${esc(r.type)}</span><span class="badge">${esc(r.effort)}</span></span>
+              <span class="pill-row"><span class="badge ${prioClass[r.priority]}">${r.priority}</span><span class="badge">${esc(r.type)}</span><span class="badge eff eff-${esc(r.effort.toLowerCase())}" title="Estimated effort">${esc(r.effort)}</span></span>
               ${r.fromRequest ? '<span class="sub">From a request</span>' : ''}</button>`).join('')}
             ${k === 'idea' ? '<button class="link-btn small" id="addIdea" type="button">+ Add</button>' : ''}</div>`;
         }).join('')}

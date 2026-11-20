@@ -340,3 +340,10 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 @media (max-width: 760px) { .req-grid { grid-template-columns: 1fr; } }
 .toast { background: var(--text); color: var(--cream); }
 @media (max-width: 760px) { .manage-head .tabs { width: 100%; overflow-x: auto; } .tabs a { padding: 8px 10px; white-space: nowrap; } }
+
+/* Roadmap: estimated effort — light to dark green ombre (Minor → Major) */
+.badge.eff-minor { background: #e8efe4; color: #3f5d47; }
+.badge.eff-small { background: #d3e2cf; color: #36553f; }
+.badge.eff-med   { background: #b4cdb1; color: #2c4a35; }
+.badge.eff-large { background: #7fa287; color: #fbfaf6; }
+.badge.eff-major { background: #4e7559; color: #fbfaf6; }
