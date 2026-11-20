@@ -360,3 +360,16 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .tip-left[data-tip]:hover::after, .tip-left[data-tip]:focus-visible::after { right: auto; left: 0; }
 .tag[data-tip] { cursor: help; }
 .notice-title { font-style: italic; font-weight: 500; }
+
+.fb-more { margin-top: 10px; }
+.fb-more label { font-size: 13px; font-weight: 500; color: var(--text); }
+.fb-more textarea { min-height: 64px; margin-bottom: 8px; font-size: 14px; }
+.req-detail { font-size: 14px; padding: 6px 10px; border-left: 2px solid var(--gold); background: var(--surface-2); border-radius: 0 6px 6px 0; }
+
+/* ---- Manage → People ---- */
+.sync-note { margin: -4px 0 4px; }
+.dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.dept-card { display: flex; flex-direction: column; gap: 2px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; color: var(--text); }
+.dept-card:hover { border-color: var(--gold); }
+.dept-card .sub { color: var(--muted); font-size: 13px; }
+.dept-card.add { align-items: center; justify-content: center; color: var(--muted); border-style: dashed; }

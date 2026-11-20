@@ -84,7 +84,7 @@
     if (S.isAdmin(me)) items.push(['manage', 'Manage', '']);
     $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra}</a>`).join('');
     const roleLabel = { employee: 'Employee', supervisor: 'Supervisor', admin: 'L&D Admin' };
-    $('#userSwitch').innerHTML = S.state.users.map((u) => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)} — ${roleLabel[u.role]}, ${esc(S.dept(u.dept))}${u.sme ? ' (SME)' : ''}</option>`).join('');
+    $('#userSwitch').innerHTML = S.state.users.map((u) => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)} — ${roleLabel[u.role]}, ${esc(S.dept(u.dept))}${u.sme ? ' (SME)' : ''}${S.active(u) ? '' : ' (inactive)'}</option>`).join('');
   }
   $('#userSwitch').addEventListener('change', (e) => {
     S.setMe(e.target.value);
@@ -502,7 +502,12 @@
       : `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
     const fb = e.helpful === null
       ? `<div class="fb">Did this help? <button class="link-btn fb-btn" data-id="${e.id}" data-v="1" type="button">Yes</button> · <button class="link-btn fb-btn" data-id="${e.id}" data-v="0" type="button">No</button></div>`
-      : e.helpful ? '<div class="fb">Thanks for the feedback.</div>' : '<div class="fb">Thanks. I\'ve sent this to L&amp;D so the answer can be improved.</div>';
+      : e.helpful ? '<div class="fb">Thanks for the feedback.</div>'
+      : e.note ? '<div class="fb">Thanks. Your details were added to the request for L&amp;D.</div>'
+      : `<div class="fb">Thanks. I've sent this to L&amp;D so the answer can be improved.
+          <form class="fb-more" data-id="${e.id}"><label for="fbm-${e.id}">Want to add more detail? <span class="muted">(optional)</span></label>
+          <textarea id="fbm-${e.id}" class="short" placeholder="e.g. What were you actually trying to find out?"></textarea>
+          <div class="row"><button class="btn btn-sm" type="submit">Add to request</button></div></form></div>`;
     return body + fb;
   }
   function viewAsk() {
@@ -528,6 +533,13 @@
     $('#askForm').addEventListener('submit', (e) => { e.preventDefault(); go($('#askInput').value); });
     $$('.ask-chip').forEach((b) => b.addEventListener('click', () => go(b.textContent)));
     const clr = $('#clearChat'); if (clr) clr.addEventListener('click', () => { askLog = []; rerender(); });
+    $$('.fb-more').forEach((f) => f.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const text = $('textarea', f).value.trim(); if (!text) { $('textarea', f).focus(); return; }
+      const e = S.addAskDetail(f.dataset.id, text);
+      askLog.forEach((x) => { if (x.entry.id === e.id) x.entry = e; });
+      toast('Added to your request'); rerender();
+    }));
     $$('.fb-btn').forEach((b) => b.addEventListener('click', () => {
       const e = S.rateAsk(b.dataset.id, b.dataset.v === '1');
       askLog.forEach((x) => { if (x.entry.id === e.id) x.entry = e; });
@@ -579,7 +591,7 @@
     const todo = S.todo(u);
     return `<a href="#/team" class="small">← My Team</a>
       <div class="row spread"><div><h1>${esc(u.name)}</h1><p class="meta">${esc(u.title)} · ${esc(S.dept(u.dept))} · started ${fmtDate(u.start)}</p></div>
-        ${S.isAdmin(me) ? `<div><label for="xfer" class="small">Department</label><select id="xfer">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>` : ''}</div>
+        ${S.isAdmin(me) ? `<a class="btn btn-ghost btn-sm" href="#/manage/people/${u.id}">Edit in People</a>` : ''}</div>
       <div class="card"><div class="row spread"><strong>Progress</strong><span class="muted">${p.done} of ${p.total}</span></div><div class="big-bar">${bar(p.pct)}<span class="pct">${p.pct}%</span></div></div>
       <h2 class="section-title">To do (${todo.length})</h2>
       <div class="card list">${todo.map((it) => `<div class="list-row"><span class="row-ico ${it.kind === 'update' ? 'warn' : ''}">${it.kind === 'update' ? '!' : '▶'}</span><span class="grow">${esc(it.kind === 'update' ? it.x.doc.title + ' v' + it.x.version.v : it.m.title)}<span class="sub">${it.kind === 'update' ? 'Update' : S.STAGE_LABEL[it.m.stage]}</span></span></div>`).join('') || '<div class="empty">All caught up ✓</div>'}</div>
@@ -621,7 +633,8 @@
         <a href="#/manage" class="${active === 'register' ? 'active' : ''}">Register</a>
         <a href="#/manage/requests" class="${active === 'requests' ? 'active' : ''}">Requests${reqN ? `<span class="count">${reqN}</span>` : ''}</a>
         <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap</a>
-        <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a></div>
+        <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a>
+        <a href="#/manage/people" class="${active === 'people' ? 'active' : ''}">People</a></div>
         <button class="btn btn-sm" id="newDocBtn" type="button">+ New document</button></div>`;
   }
 
@@ -844,7 +857,7 @@
       <div class="row spread"><span class="sub">${esc(label)} · ${fmtDate(sub.date)}</span><span class="tag ${stC}">${stL}</span></div>
       <strong class="req-text">${esc(sub.text)}</strong>
       <span class="sub">${isAsk ? `Asked ${sub.askers.length}× by ` : 'From '}${askers.map((id) => esc(isAsk ? firstName(S.user(id)) : S.user(id).name)).join(', ')}</span>
-      ${sub.note ? `<span class="sub"><em>${esc(sub.note)}</em></span>` : ''}
+      ${(sub.details || []).map((d) => `<div class="req-detail">“${esc(d.text)}” <span class="muted">— ${esc(firstName(S.user(d.user)))}, ${fmtAt(d.at)}</span></div>`).join('')}
       ${wordings.length > 1 ? `<details class="wordings"><summary>How it was asked</summary>${wordings.map((e) => `<div class="small">“${esc(e.q)}” · ${esc(firstName(S.user(e.user)))}, ${fmtAt(e.at)}</div>`).join('')}</details>` : ''}
       ${sub.status === 'answered' ? `<div class="req-answer"><span class="sub">Answered ${fmtDate(sub.answer.date)} · sent to ${askers.length} ${askers.length === 1 ? 'person' : 'people'}</span><p>${esc(sub.answer.text)}</p>${sub.answer.ref ? `<a class="chip chip-sm" href="${sourceHref(sub.answer)}">${esc(sub.answer.label)}</a>` : ''}</div>` : ''}
       ${sub.status === 'declined' && sub.reply ? `<div class="req-answer"><span class="sub">Closed ${fmtDate(sub.closedOn)}</span><p>${esc(sub.reply)}</p></div>` : ''}
@@ -958,6 +971,107 @@
     const add = $('#addIdea'); if (add) add.addEventListener('click', () => roadmapModal(null));
   }
 
+  /* ---------- People: employees, departments, team leads, access ---------- */
+  const ACCESS = { employee: 'Employee', supervisor: 'Team lead', admin: 'L&D admin' };
+  let pplDept = 'all', pplQuery = '', pplInactive = false;
+  function viewPeople() {
+    const users = S.state.users;
+    const q = pplQuery.toLowerCase();
+    const shown = users.filter((u) => (pplInactive ? !S.active(u) : S.active(u)) && (pplDept === 'all' || u.dept === pplDept)
+      && (!q || (u.name + ' ' + (u.title || '')).toLowerCase().includes(q))).sort((a, b) => a.name.localeCompare(b.name));
+    const inactiveN = users.filter((u) => !S.active(u)).length;
+    return manageTabs('people') + `
+      <p class="small muted sync-note">In the full build, names, job titles, departments and managers sync from the internal website, so new hires appear here automatically. You only set what's specific to the Knowledge Center.</p>
+      <h2 class="section-title">Departments</h2>
+      <div class="dept-grid">${S.state.departments.map((d) => {
+        const lead = d.lead && S.user(d.lead);
+        const n = users.filter((u) => S.active(u) && u.dept === d.id).length;
+        return `<button class="dept-card" data-id="${d.id}" type="button"><strong>${esc(d.name)}</strong><span class="sub">Lead: ${lead ? esc(lead.name) : '—'}</span><span class="sub">${n} ${n === 1 ? 'person' : 'people'}</span></button>`;
+      }).join('')}<button class="dept-card add" id="addDept" type="button">+ Add department</button></div>
+      <div class="row spread section-title"><h2 style="margin:0">People</h2><button class="btn btn-sm" id="addPerson" type="button">+ Add person</button></div>
+      <div class="row toolbar">
+        <input type="search" id="pplSearch" placeholder="Search by name or title" value="${esc(pplQuery)}">
+        <div class="pill-row">${[{ id: 'all', name: 'All' }, ...S.state.departments].map((d) => `<button class="chip ${pplDept === d.id && !pplInactive ? 'active' : ''}" data-d="${d.id}" type="button">${esc(d.name)}</button>`).join('')}
+          ${inactiveN ? `<button class="chip ${pplInactive ? 'active' : ''}" data-d="inactive" type="button">Inactive <span class="chip-n">${inactiveN}</span></button>` : ''}</div>
+      </div>
+      <div class="card table-wrap"><table id="pplTable"><thead><tr><th>Name</th><th>Department</th><th>Team lead</th><th>Access</th><th>Started</th><th>Training</th></tr></thead><tbody>
+      ${shown.map((u) => {
+        const lead = u.role === 'admin' ? null : S.leadOf(u);
+        const p = S.progress(u);
+        return `<tr class="click" data-id="${u.id}"><td><strong>${esc(u.name)}</strong>${u.sme ? ' <span class="tag tag-muted">SME</span>' : ''}<br><span class="muted small">${esc(u.title || '')}</span></td>
+          <td>${esc(S.dept(u.dept))}</td>
+          <td>${lead ? esc(lead.name) + (u.supervisor ? '' : ' <span class="muted small">(dept. lead)</span>') : '<span class="muted">—</span>'}</td>
+          <td>${ACCESS[u.role]}</td><td class="nowrap">${fmtDate(u.start)}</td>
+          <td class="cell-pct">${u.role === 'admin' ? '<span class="muted">—</span>' : p.pct + '%' + bar(p.pct)}</td></tr>`;
+      }).join('') || '<tr><td colspan="6" class="empty">No one matches.</td></tr>'}
+      </tbody></table></div>`;
+  }
+  function personModal(u) {
+    const isNew = !u;
+    u = u || { name: '', title: '', dept: S.state.departments[0].id, supervisor: null, role: 'employee', start: S.state.today };
+    const leadOpts = (dept) => { const dl = S.deptLead(dept); return `<option value="">Department lead${dl ? ' (' + esc(dl.name) + ')' : ''}</option>` + S.leads().filter((x) => x.id !== u.id).map((x) => `<option value="${x.id}" ${u.supervisor === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join(''); };
+    openModal(`<h2 id="modalTitle">${isNew ? 'Add person' : esc(u.name)}</h2>
+      ${isNew ? '<p class="small muted">In the full build this happens automatically when someone is added to the internal website.</p>' : ''}
+      <div class="grid-2col">
+        <div class="field"><label for="pName">Name</label><input type="text" id="pName" value="${esc(u.name)}"></div>
+        <div class="field"><label for="pTitle">Job title</label><input type="text" id="pTitle" value="${esc(u.title || '')}"></div>
+        <div class="field"><label for="pDept">Department</label><select id="pDept">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
+        <div class="field"><label for="pLead">Team lead</label><select id="pLead">${leadOpts(u.dept)}</select></div>
+        <div class="field"><label for="pRole">Knowledge Center access</label><select id="pRole">${Object.entries(ACCESS).map(([k, l]) => `<option value="${k}" ${u.role === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="field"><label for="pStart">Start date</label><input type="text" id="pStart" value="${esc(u.start)}" placeholder="YYYY-MM-DD"></div>
+      </div>
+      <div class="field"><label class="opt" style="margin:0"><input type="checkbox" id="pSme" ${u.sme ? 'checked' : ''}><span>Subject-matter expert<br><span class="muted small">Can submit content for their department to L&amp;D</span></span></label></div>
+      <p class="small muted" id="pHint">${isNew ? 'Their training to-do list is built automatically from their department.' : ''}</p>
+      <div class="row end">${!isNew ? `<button class="link-btn small" id="pActive" type="button" style="margin-right:auto">${S.active(u) ? 'Deactivate' : 'Reactivate'}</button>` : ''}
+        <button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="pSave" type="button">${isNew ? 'Add person' : 'Save'}</button></div>`, (card) => {
+      const dept = $('#pDept', card), hint = $('#pHint', card);
+      dept.addEventListener('change', () => {
+        $('#pLead', card).innerHTML = leadOpts(dept.value);
+        if (!isNew) hint.textContent = dept.value !== u.dept ? 'Their completed training stays on record. Only the new department\'s training will be added to their to-do list.' : '';
+      });
+      $('#pSave', card).addEventListener('click', () => {
+        const name = $('#pName', card).value.trim(); if (!name) return $('#pName', card).focus();
+        const saved = S.savePerson(isNew ? null : u.id, { name, title: $('#pTitle', card).value.trim(), dept: dept.value, supervisor: $('#pLead', card).value || null,
+          role: $('#pRole', card).value, start: $('#pStart', card).value.trim() || S.state.today, sme: $('#pSme', card).checked ? dept.value : null });
+        closeModal();
+        toast(isNew ? `${firstName(saved)} added · ${S.todo(saved).length} items in their to-do list` : 'Saved');
+        location.hash = '#/manage/people'; rerender();
+      });
+      const act = $('#pActive', card);
+      if (act) act.addEventListener('click', () => {
+        u.active = !S.active(u); S.save(); closeModal();
+        toast(S.active(u) ? 'Reactivated' : `${firstName(u)} deactivated · their records are kept`);
+        location.hash = '#/manage/people'; rerender();
+      });
+    });
+  }
+  function deptModal(d) {
+    const isNew = !d;
+    d = d || { name: '', lead: null };
+    openModal(`<h2 id="modalTitle">${isNew ? 'Add department' : esc(d.name)}</h2>
+      <div class="field"><label for="dName">Name</label><input type="text" id="dName" value="${esc(d.name)}"></div>
+      <div class="field"><label for="dLead">Department lead</label><select id="dLead"><option value="">None</option>${S.leads().map((x) => `<option value="${x.id}" ${d.lead === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+        <p class="small muted" style="margin-top:6px">Everyone in this department reports to this person unless you choose someone else for them.</p></div>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="dSave" type="button">${isNew ? 'Add department' : 'Save'}</button></div>`, (card) => {
+      $('#dSave', card).addEventListener('click', () => {
+        const name = $('#dName', card).value.trim(); if (!name) return $('#dName', card).focus();
+        S.saveDept(isNew ? null : d.id, { name, lead: $('#dLead', card).value || null }); closeModal(); toast('Saved'); rerender();
+      });
+    });
+  }
+  function bindPeople(openId) {
+    bindNewDoc();
+    const inp = $('#pplSearch');
+    inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') { pplQuery = inp.value; rerender(); } });
+    inp.addEventListener('change', () => { pplQuery = inp.value; rerender(); });
+    $$('.toolbar .chip').forEach((c) => c.addEventListener('click', () => { if (c.dataset.d === 'inactive') { pplInactive = !pplInactive; } else { pplInactive = false; pplDept = c.dataset.d; } rerender(); }));
+    $$('#pplTable tr.click').forEach((tr) => tr.addEventListener('click', () => personModal(S.user(tr.dataset.id))));
+    $$('.dept-card[data-id]').forEach((b) => b.addEventListener('click', () => deptModal(S.deptObj(b.dataset.id))));
+    $('#addDept').addEventListener('click', () => deptModal(null));
+    $('#addPerson').addEventListener('click', () => personModal(null));
+    if (openId && S.user(openId)) personModal(S.user(openId));
+  }
+
   /* ---------- Ask log: every question across the company ---------- */
   let logFilter = 'all', logQuery = '';
   function viewAskLog() {
@@ -1035,6 +1149,7 @@
       else if (b === 'requests') { html = viewRequests(); bind = bindRequests; }
       else if (b === 'roadmap') { html = viewRoadmap(); bind = bindRoadmap; }
       else if (b === 'ask') { html = viewAskLog(); bind = bindAskLog; }
+      else if (b === 'people') { html = viewPeople(); bind = () => bindPeople(c); }
       else { html = viewRegister(); bind = bindRegister; }
     } else html = notFound();
 

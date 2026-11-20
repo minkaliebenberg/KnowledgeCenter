@@ -5,7 +5,7 @@
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v6';
+  const KEY = 'crownring-kc-demo-v8';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -123,7 +123,7 @@
   /* Employees who must acknowledge a pushed version, and who has. */
   S.ackStats = (d, v) => {
     const ref = d.id + '@' + v.v;
-    const need = state.users.filter((u) => u.role !== 'admin' && appliesTo(d.depts, u) && u.start < v.date);
+    const need = state.users.filter((u) => u.role !== 'admin' && S.active(u) && appliesTo(d.depts, u) && u.start < v.date);
     const acked = state.completions.filter((c) => c.kind === 'update' && c.ref === ref);
     return { need, acked, pending: need.filter((u) => !acked.some((c) => c.user === u.id)) };
   };
@@ -140,7 +140,28 @@
     save();
   };
 
-  S.team = (u) => (u.role === 'admin' ? state.users.filter((x) => x.role !== 'admin') : state.users.filter((x) => x.supervisor === u.id));
+  /* ---------- PEOPLE ----------
+     In production, people, job titles, departments and managers come from the internal website / Microsoft 365.
+     L&D only sets Knowledge Center access, SME status and (if needed) a team-lead override. */
+  S.active = (u) => u.active !== false;
+  S.deptObj = (id) => state.departments.find((d) => d.id === id);
+  S.deptLead = (id) => { const d = S.deptObj(id); return d && d.lead ? S.user(d.lead) : null; };
+  S.leadOf = (u) => { if (u.supervisor) return S.user(u.supervisor); const l = S.deptLead(u.dept); return l && l.id !== u.id ? l : null; };
+  S.team = (u) => state.users.filter((x) => S.active(x) && x.id !== u.id && x.role !== 'admin' && (u.role === 'admin' || (S.leadOf(x) || {}).id === u.id));
+  S.leads = () => state.users.filter((x) => S.active(x) && (x.role === 'supervisor' || x.role === 'admin'));
+  S.savePerson = (id, f) => {
+    let u = id && S.user(id);
+    if (!u) { u = { id: 'u' + Date.now().toString(36), deptHistory: [], active: true, start: state.today }; state.users.push(u); }
+    if (u.dept && f.dept && f.dept !== u.dept) S.transfer(u.id, f.dept);
+    Object.assign(u, f);
+    if (!u.sme) delete u.sme;
+    save(); return u;
+  };
+  S.saveDept = (id, f) => {
+    let d = id && S.deptObj(id);
+    if (!d) { d = { id: (f.name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || 'D') + Date.now().toString(36).slice(-2) }; state.departments.push(d); }
+    Object.assign(d, f); save(); return d;
+  };
 
   S.transfer = (userId, newDept) => {
     const u = S.user(userId);
@@ -209,6 +230,14 @@
     const e = (state.askLog || []).find((x) => x.id === id); if (!e) return null;
     e.helpful = helpful;
     if (helpful === false && !e.requestId) e.requestId = S.requestFromAsk(S.user(e.user), e.q, e.id, 'Answer marked not helpful').id;
+    save(); return e;
+  };
+  /* Extra detail an employee adds after marking an answer "not helpful" — saved on their log entry and the request */
+  S.addAskDetail = (id, text) => {
+    const e = (state.askLog || []).find((x) => x.id === id); if (!e || !text) return e;
+    e.note = text;
+    const sub = S.askSub(e);
+    if (sub) { sub.details = sub.details || []; sub.details.push({ user: e.user, at: nowStamp(), text }); }
     save(); return e;
   };
   S.askHistory = (userId) => (state.askLog || []).filter((e) => !userId || e.user === userId).slice().sort((a, b) => (a.at < b.at ? 1 : -1));
