@@ -360,6 +360,36 @@
     submissions: [
       { id: 'S1', user: 'u1', type: 'question', date: '2026-10-29', status: 'new', text: 'Is there a guide for what to do when a retailer sends a return without an RA number?' },
       { id: 'S2', user: 'u4', type: 'topic', date: '2026-10-15', status: 'new', text: 'Could we get a glossary? New people ask about terms like "gallery" and "Frankenstein" a lot.' },
+      /* Sent automatically by Ask when it could not find an answer. Repeat questions are grouped. */
+      { id: 'S3', user: 'u4', type: 'ask', date: '2026-11-04', status: 'new', text: 'What is the restocking fee for a fully mounted return?', askers: [{ user: 'u4', at: '2026-11-04T09:41' }, { user: 'u8', at: '2026-11-07T14:05' }, { user: 'u2', at: '2026-11-08T11:20' }], logIds: ['A3', 'A9', 'A12'] },
+      { id: 'S4', user: 'u1', type: 'ask', date: '2026-11-06', status: 'new', text: 'What is the dress code?', askers: [{ user: 'u1', at: '2026-11-06T08:52' }], logIds: ['A6'] },
+      { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful: "Needed to know who approves when the supervisor is away."', askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
+      { id: 'S5', user: 'u2', type: 'ask', date: '2026-10-21', status: 'answered', text: 'Do we charge extra to rhodium plate a white gold repair?', askers: [{ user: 'u2', at: '2026-10-21T15:30' }], logIds: ['A1'],
+        answer: { kind: 'doc', ref: 'D39', label: 'Repair Fee › Repair fees', v: '1.0', text: 'Yes. Rhodium plating is charged as its own line on white gold repairs. The current amount is in the Repair Fee guide.', date: '2026-11-05', by: 'u5' } },
+    ],
+
+    /* Personal "your question has an answer" notices — shown at the top of the asker's Learn to-do */
+    notices: [{ id: 'N1', user: 'u2', subId: 'S5', date: '2026-11-05', read: false }],
+
+    /* ---------------------------------------------------------------------------
+       ASK LOG — every question asked, with what Ask answered and its sources.
+       Visible to: the employee (their own), their supervisor, and L&D (everyone).
+       helpful: true / false / null (not rated)
+    --------------------------------------------------------------------------- */
+    askLog: [
+      { id: 'A1', user: 'u2', at: '2026-10-21T15:30', q: 'Do we charge extra to rhodium plate a white gold repair?', found: false, requestId: 'S5' },
+      { id: 'A2', user: 'u4', at: '2026-11-03T10:12', q: 'What is a memo?', found: true, answer: 'A memo is merchandise sent to a retailer on consignment. It stays our property until the retailer sells it or sends it back, and it is only invoiced once sold.', sources: [{ kind: 'doc', ref: 'D6', label: 'Memo Procedure › What is a memo?', v: '1.1' }], helpful: true },
+      { id: 'A3', user: 'u4', at: '2026-11-04T09:41', q: 'What is the restocking fee for a fully mounted return?', found: false, requestId: 'S3' },
+      { id: 'A4', user: 'u4', at: '2026-11-05T13:18', q: 'How do I merge tickets?', found: true, answer: 'Select both tickets in the list. Click Merge and choose which one to keep. The conversations are combined into one ticket.', sources: [{ kind: 'guide', ref: 'zoho:z17', label: 'Zoho Desk › How to merge duplicate tickets' }], helpful: true },
+      { id: 'A5', user: 'u1', at: '2026-11-05T16:02', q: 'What does the warranty cover?', found: true, answer: 'Manufacturing defects in Noam Carver pieces.', sources: [{ kind: 'doc', ref: 'D21', label: 'NC Warranty › What the warranty covers', v: '1.0' }], helpful: null },
+      { id: 'A6', user: 'u1', at: '2026-11-06T08:52', q: 'What is the dress code?', found: false, requestId: 'S4' },
+      { id: 'A7', user: 'u1', at: '2026-11-06T09:10', q: 'How do I set up my email signature?', found: true, answer: 'Click your profile picture, then Personal settings. Open Signature and paste the approved signature. Save, then send yourself a test reply.', sources: [{ kind: 'guide', ref: 'zoho:z6', label: 'Zoho Desk › How to set up your email signature' }], helpful: true },
+      { id: 'A8', user: 'u4', at: '2026-11-06T11:47', q: 'Who approves a rush order?', found: true, answer: 'Rush orders must be approved by your supervisor before you confirm a date with the retailer.', sources: [{ kind: 'doc', ref: 'D38', label: 'Procedure to Follow on Rush › Approval', v: '1.0' }], helpful: false, note: 'Needed to know who approves when the supervisor is away.', requestId: 'S6' },
+      { id: 'A9', user: 'u8', at: '2026-11-07T14:05', q: 'Restocking fee for fully mounted returns?', found: false, requestId: 'S3' },
+      { id: 'A10', user: 'u8', at: '2026-11-07T14:12', q: 'What are group ships?', found: true, answer: 'Which retailers ship together and on which days.', sources: [{ kind: 'doc', ref: 'D20', label: 'Group Ships › Group ships', v: '1.0' }], helpful: true },
+      { id: 'A11', user: 'u6', at: '2026-11-08T08:30', q: 'Where are the finished prong tolerances?', found: true, answer: 'The acceptable prong sizes on finished pieces, by center stone size.', sources: [{ kind: 'doc', ref: 'D24', label: 'NC Finished Prong Tolerances - Center Stones › Finished tolerances', v: '1.0' }], helpful: null },
+      { id: 'A12', user: 'u2', at: '2026-11-08T11:20', q: 'Is there a restocking fee on fully mounted returns?', found: false, requestId: 'S3' },
+      { id: 'A13', user: 'u2', at: '2026-11-08T11:26', q: 'When is a memo invoiced?', found: true, answer: 'A memo stays our property until the retailer sells it or sends it back, and it is only invoiced once sold.', sources: [{ kind: 'doc', ref: 'D6', label: 'Memo Procedure › What is a memo?', v: '1.1' }], helpful: true },
     ],
 
     /* Roadmap — mirrors the Documentation Map "Roadmap" tab */

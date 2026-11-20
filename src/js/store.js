@@ -5,7 +5,7 @@
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v4';
+  const KEY = 'crownring-kc-demo-v6';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -175,6 +175,66 @@
   S.system = (id) => (state.systems || []).find((x) => x.id === id);
   S.guide = (sysId, gid) => { const x = S.system(sysId); return x && x.guides.find((g) => g.id === gid); };
   S.guideRef = (ref) => { const [sid, gid] = ref.split(':'); return { sys: S.system(sid), g: S.guide(sid, gid) }; };
+
+
+  /* ---------- ASK LOG: every question, its answer and sources ----------
+     Unanswered questions are sent to L&D automatically (Manage → Roadmap → Requests).
+     Repeat questions are grouped onto one request so L&D sees how often it comes up. */
+  const norm = (t) => (t.toLowerCase().match(/[a-z0-9]+/g) || []).filter((w) => !STOP.has(w)).map(stem).sort().join(' ');
+  const nowStamp = () => { const d = new Date(); return state.today + 'T' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+  S.logAsk = (u, q, r) => {
+    state.askLog = state.askLog || [];
+    const entry = { id: 'A' + Date.now(), user: u.id, at: nowStamp(), q, found: r.found, helpful: null };
+    if (r.found) {
+      const t = r.top;
+      entry.sources = [t.guide
+        ? { kind: 'guide', ref: t.sys.id + ':' + t.guide.id, label: t.sys.name + ' › ' + t.guide.title }
+        : { kind: 'doc', ref: t.d.id, label: t.d.title + ' › ' + t.s.h, v: t.v.v }];
+      entry.answer = t.guide ? t.guide.steps.join(' ').replace(/\*\*/g, '') : t.s.body.replace(/\*\*/g, '').replace(/^- /gm, '');
+    } else {
+      entry.requestId = S.requestFromAsk(u, q, entry.id).id;
+    }
+    state.askLog.push(entry); save();
+    return entry;
+  };
+  S.requestFromAsk = (u, q, logId, note) => {
+    const key = norm(q);
+    let sub = state.submissions.find((x) => x.type === 'ask' && x.status === 'new' && norm(x.text) === key);
+    if (!sub) { sub = { id: 'S' + Date.now(), user: u.id, type: 'ask', date: state.today, status: 'new', text: q, askers: [], logIds: [] }; state.submissions.unshift(sub); }
+    sub.askers.push({ user: u.id, at: nowStamp() }); sub.logIds.push(logId);
+    if (note) sub.note = (sub.note ? sub.note + ' / ' : '') + note;
+    save(); return sub;
+  };
+  S.rateAsk = (id, helpful) => {
+    const e = (state.askLog || []).find((x) => x.id === id); if (!e) return null;
+    e.helpful = helpful;
+    if (helpful === false && !e.requestId) e.requestId = S.requestFromAsk(S.user(e.user), e.q, e.id, 'Answer marked not helpful').id;
+    save(); return e;
+  };
+  S.askHistory = (userId) => (state.askLog || []).filter((e) => !userId || e.user === userId).slice().sort((a, b) => (a.at < b.at ? 1 : -1));
+  /* What the employee sees. Internal steps (roadmap etc.) stay "Requested" — only L&D sees the roadmap. */
+  S.askSub = (e) => e.requestId && state.submissions.find((x) => x.id === e.requestId);
+  S.askStatus = (e) => {
+    const sub = S.askSub(e);
+    if (sub && sub.status === 'answered') return { key: 'updated', label: 'Updated', answered: true };
+    if (e.found && e.helpful !== false) return { key: 'answered', label: 'Answered', answered: true };
+    if (sub && sub.status === 'declined') return { key: 'closed', label: 'Closed', answered: false };
+    return { key: 'requested', label: 'Requested', answered: false };
+  };
+
+  /* ---------- REQUESTS: L&D answers, adds to roadmap, or closes ---------- */
+  S.requestAskers = (sub) => [...new Set(sub.askers ? sub.askers.map((a) => a.user) : [sub.user])];
+  S.answerRequest = (subId, answer) => {
+    const sub = state.submissions.find((x) => x.id === subId);
+    sub.status = 'answered';
+    sub.answer = Object.assign({ date: state.today, by: S.me().id }, answer);
+    state.notices = state.notices || [];
+    S.requestAskers(sub).forEach((uid) => state.notices.push({ id: 'N' + Date.now() + uid, user: uid, subId, date: state.today, read: false }));
+    save(); return sub;
+  };
+  S.closeRequest = (subId, reply) => { const sub = state.submissions.find((x) => x.id === subId); sub.status = 'declined'; sub.reply = reply || ''; sub.closedOn = state.today; save(); };
+  S.notices = (u) => (state.notices || []).filter((n) => n.user === u.id && !n.read).map((n) => Object.assign({}, n, { sub: state.submissions.find((x) => x.id === n.subId) })).filter((n) => n.sub);
+  S.readNotice = (id) => { const n = (state.notices || []).find((x) => x.id === id); if (n) { n.read = true; n.readOn = state.today; save(); } };
 
   /* ---------- ASK: simulated retrieval over CURRENT, ACTIVE docs only ---------- */
   const STOP = new Set('a an the is are was were be to of and or in on for with what how do does i we our my me can when who where which should if it this that at by from any about need you have get as there their they them your'.split(' '));
