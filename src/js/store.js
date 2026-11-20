@@ -5,7 +5,7 @@
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v5';
+  const KEY = 'crownring-kc-demo-v6';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -212,14 +212,29 @@
     save(); return e;
   };
   S.askHistory = (userId) => (state.askLog || []).filter((e) => !userId || e.user === userId).slice().sort((a, b) => (a.at < b.at ? 1 : -1));
-  /* What the employee sees as the status of a question */
+  /* What the employee sees. Internal steps (roadmap etc.) stay "Requested" — only L&D sees the roadmap. */
+  S.askSub = (e) => e.requestId && state.submissions.find((x) => x.id === e.requestId);
   S.askStatus = (e) => {
-    if (e.found && e.helpful !== false) return { key: 'answered', label: 'Answered' };
-    const sub = e.requestId && state.submissions.find((x) => x.id === e.requestId);
-    if (!sub || sub.status === 'new') return { key: 'sent', label: 'Sent to L&D' };
-    if (sub.status === 'done') return { key: 'roadmap', label: 'On the roadmap' };
-    return { key: 'reviewed', label: 'Reviewed by L&D' };
+    const sub = S.askSub(e);
+    if (sub && sub.status === 'answered') return { key: 'updated', label: 'Updated', answered: true };
+    if (e.found && e.helpful !== false) return { key: 'answered', label: 'Answered', answered: true };
+    if (sub && sub.status === 'declined') return { key: 'closed', label: 'Closed', answered: false };
+    return { key: 'requested', label: 'Requested', answered: false };
   };
+
+  /* ---------- REQUESTS: L&D answers, adds to roadmap, or closes ---------- */
+  S.requestAskers = (sub) => [...new Set(sub.askers ? sub.askers.map((a) => a.user) : [sub.user])];
+  S.answerRequest = (subId, answer) => {
+    const sub = state.submissions.find((x) => x.id === subId);
+    sub.status = 'answered';
+    sub.answer = Object.assign({ date: state.today, by: S.me().id }, answer);
+    state.notices = state.notices || [];
+    S.requestAskers(sub).forEach((uid) => state.notices.push({ id: 'N' + Date.now() + uid, user: uid, subId, date: state.today, read: false }));
+    save(); return sub;
+  };
+  S.closeRequest = (subId, reply) => { const sub = state.submissions.find((x) => x.id === subId); sub.status = 'declined'; sub.reply = reply || ''; sub.closedOn = state.today; save(); };
+  S.notices = (u) => (state.notices || []).filter((n) => n.user === u.id && !n.read).map((n) => Object.assign({}, n, { sub: state.submissions.find((x) => x.id === n.subId) })).filter((n) => n.sub);
+  S.readNotice = (id) => { const n = (state.notices || []).find((x) => x.id === id); if (n) { n.read = true; n.readOn = state.today; save(); } };
 
   /* ---------- ASK: simulated retrieval over CURRENT, ACTIVE docs only ---------- */
   const STOP = new Set('a an the is are was were be to of and or in on for with what how do does i we our my me can when who where which should if it this that at by from any about need you have get as there their they them your'.split(' '));

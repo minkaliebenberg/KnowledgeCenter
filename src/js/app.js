@@ -125,7 +125,7 @@
         if (!text) { $('#sText', card).focus(); return; }
         S.submit(me.id, $('#sType', card).value, text);
         closeModal(); toast('Sent to L&D — thank you!');
-        if (location.hash.startsWith('#/manage/roadmap')) rerender();
+        if (location.hash.startsWith('#/manage/requests')) rerender();
       });
     });
   }
@@ -139,6 +139,26 @@
     : `<a class="list-row" href="#/learn/module/${it.m.id}"><span class="row-ico">${it.m.stage === 'ongoing' ? '★' : '▶'}</span>
         <span class="grow"><strong>${esc(it.m.title)}</strong><span class="sub">${S.STAGE_LABEL[it.m.stage]} · ${it.m.minutes} min</span></span><span class="btn btn-sm btn-ghost">Start</span></a>`;
 
+  const noticeRow = (n) => `<a class="list-row" href="#/learn/answer/${n.id}"><span class="row-ico warn">?</span>
+      <span class="grow"><strong>Your question has an answer</strong><span class="sub">“${esc(n.sub.text)}” · 1 min</span></span><span class="btn btn-sm">Read</span></a>`;
+  function viewAnswerNotice(id) {
+    const me = S.me();
+    const n = (S.state.notices || []).find((x) => x.id === id && x.user === me.id);
+    const sub = n && S.state.submissions.find((x) => x.id === n.subId);
+    if (!sub || !sub.answer) return notFound();
+    const mine = (sub.askers || [{ user: sub.user, at: sub.date }]).filter((a) => a.user === me.id);
+    const askedOn = mine.length ? mine[0].at.slice(0, 10) : sub.date;
+    const a = sub.answer;
+    return `<div class="narrow"><a href="#/learn" class="small">← Learn</a>
+      <article class="card stack">
+        <div><span class="badge warn">Answer to your question</span><h1>${esc(sub.text)}</h1>
+          <p class="meta">You asked on ${fmtDate(askedOn)}${sub.type === 'ask' ? ', when Ask couldn\'t find an answer' : ''}. L&amp;D added this on ${fmtDate(a.date)}.</p></div>
+        <div class="answer-box">${md(a.text)}</div>
+        ${a.ref ? `<p>Source: <a href="${sourceHref(a)}">${esc(a.label)}${a.v ? ' · v' + esc(a.v) : ''}</a></p>` : ''}
+        ${n.read ? `<div class="result ok">✓ Read ${fmtDate(n.readOn)}</div>` : '<button class="btn" id="gotIt" type="button">Got it</button>'}
+      </article></div>`;
+  }
+  function bindAnswerNotice(id) { const b = $('#gotIt'); if (b) b.addEventListener('click', () => { S.readNotice(id); toast('Saved to your question history'); location.hash = '#/learn'; }); }
   function viewLearn() {
     const me = S.me();
     const p = S.progress(me);
@@ -146,14 +166,16 @@
     const doneMods = S.requiredModules(me).filter((m) => S.done(me.id, 'module', m.id));
     const doneUps = S.requiredUpdates(me).filter((x) => S.done(me.id, 'update', x.ref));
     const doneCount = doneMods.length + doneUps.length;
+    const notices = S.notices(me);
+    const total = todo.length + notices.length;
     return `
       <h1>Hi ${esc(firstName(me))}</h1>
       <div class="card">
         <div class="row spread"><strong>Your training</strong><span class="muted">${p.done} of ${p.total} complete</span></div>
         <div class="big-bar">${bar(p.pct)}<span class="pct">${p.pct}%</span></div>
       </div>
-      <h2 class="section-title">To do ${todo.length ? `<span class="count">${todo.length}</span>` : ''}</h2>
-      ${todo.length ? `<div class="card list">${todo.map(itemRow).join('')}</div>` : `<div class="card empty">You're all caught up ✓</div>`}
+      <h2 class="section-title">To do ${total ? `<span class="count">${total}</span>` : ''}</h2>
+      ${total ? `<div class="card list">${notices.map(noticeRow).join('')}${todo.map(itemRow).join('')}</div>` : `<div class="card empty">You're all caught up ✓</div>`}
       ${doneCount ? `<details class="card list completed">
         <summary>Completed (${doneCount})</summary>
         ${doneUps.map((x) => `<a class="list-row" href="#/learn/update/${x.doc.id}"><span class="row-ico ok">✓</span><span class="grow">${esc(x.doc.title)}<span class="sub">Update v${esc(x.version.v)} · ${fmtDate(S.done(me.id, 'update', x.ref).date)}</span></span></a>`).join('')}
@@ -438,25 +460,37 @@
   const SUGGESTED = ['What is a memo?', 'Who approves a rush order?', 'How do I merge tickets?'];
   const fmtAt = (at) => { const d = new Date(at); return d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' }) + ' · ' + d.toLocaleTimeString('en-CA', { hour: 'numeric', minute: '2-digit' }); };
   const sourceHref = (src) => { if (src.kind === 'doc') return '#/refer/doc/' + src.ref; const [sid, gid] = src.ref.split(':'); return '#/navigate/' + sid + '/' + gid; };
-  const STATUS_TAG = { answered: 'tag-ok', sent: 'tag-gold', roadmap: 'tag-ink', reviewed: 'tag-muted' };
+  const STATUS_TAG = { answered: 'tag-ok', updated: 'tag-ok', requested: 'tag-gold', closed: 'tag-muted' };
   const statusTag = (e) => { const st = S.askStatus(e); return `<span class="tag ${STATUS_TAG[st.key]}">${esc(st.label)}</span>`; };
 
   /* One question in a history list (employee, supervisor and L&D views share this) */
   function logRow(e, showUser) {
     const u = S.user(e.user);
+    const st = S.askStatus(e), sub = S.askSub(e);
+    const chips = (list) => list.length ? `<div class="pill-row">${list.map((src) => `<a class="chip chip-sm" href="${sourceHref(src)}">${src.kind === 'guide' ? '↗ ' : ''}${esc(src.label)}${src.v ? ' · v' + esc(src.v) : ''}</a>`).join('')}</div>` : '';
+    let body;
+    if (st.key === 'updated') {
+      const a = sub.answer;
+      body = `<p class="log-history">${e.found ? 'The first answer wasn\'t helpful' : 'Ask couldn\'t find an answer'} when this was asked. L&amp;D added one on ${fmtDate(a.date)}.</p>
+        <p class="log-a">${esc(a.text)}</p>${a.ref ? chips([a]) : ''}`;
+    } else if (e.found) {
+      body = `<p class="log-a">${esc(e.answer || '')}</p>${e.note ? `<p class="log-a small"><em>“${esc(e.note)}”</em></p>` : ''}${chips(e.sources || [])}`;
+    } else if (st.key === 'closed') {
+      body = `<p class="log-a muted">No answer found in the documentation.</p>${sub.reply ? `<p class="log-history">L&amp;D: ${esc(sub.reply)}</p>` : ''}`;
+    } else {
+      body = '<p class="log-a muted">No answer found in the documentation yet. L&amp;D has been asked to add one.</p>';
+    }
     return `<div class="log-row">
-      <div class="row spread log-top"><strong class="log-q">${esc(e.q)}</strong>${statusTag(e)}</div>
+      <div class="row spread log-top"><strong class="log-q">${esc(e.q)}</strong><span class="tag ${STATUS_TAG[st.key]}">${esc(st.label)}</span></div>
       <div class="sub">${showUser ? esc(u.name) + ' · ' : ''}${fmtAt(e.at)}${e.helpful === true ? ' · Marked helpful' : ''}${e.helpful === false ? ' · <span class="nh">Marked not helpful</span>' : ''}</div>
-      ${e.found ? `<p class="log-a">${esc(e.answer || '')}</p>` : '<p class="log-a muted">No answer found in the documentation.</p>'}
-      ${e.note ? `<p class="log-a small"><em>“${esc(e.note)}”</em></p>` : ''}
-      ${(e.sources || []).length ? `<div class="pill-row">${e.sources.map((src) => `<a class="chip chip-sm" href="${sourceHref(src)}">${src.kind === 'guide' ? '↗ ' : ''}${esc(src.label)}${src.v ? ' · v' + esc(src.v) : ''}</a>`).join('')}</div>` : ''}
+      ${body}
     </div>`;
   }
 
   function answerHtml(x) {
     const r = x.r, e = x.entry;
     if (!r.found) return `<p>I couldn't find that in our documents, so I won't guess.</p>
-      <p class="small muted">I've sent your question to L&amp;D so it can be added. You can follow it in <a href="#/ask/history">your history</a>.</p>`;
+      <p class="small muted">I've sent your question to L&amp;D so it can be added. You can follow it in <a href="#/ask/history">your question history</a>.</p>`;
     const t = r.top;
     const body = t.guide
       ? `<ol class="steps small-steps">${t.guide.steps.map((st) => `<li>${md(st).replace(/^<p>|<\/p>$/g, '')}</li>`).join('')}</ol><p class="source">Source: <a href="#/navigate/${t.sys.id}/${t.guide.id}">${esc(t.sys.name)} › ${esc(t.guide.title)}</a></p>`
@@ -468,14 +502,13 @@
   }
   function viewAsk() {
     return `<div class="narrow ask">
-      <div class="ask-top"><a href="#/ask/history" class="small">Your question history →</a></div>
       <div class="chat" id="chat" aria-live="polite">
         ${askLog.length ? '' : `<div class="ask-hello"><h1>What can I help you find?</h1><p class="muted">Answers come from our current documents and guides, with a link to the source.</p></div>`}
         ${askLog.map((x) => `<div class="msg user">${esc(x.q)}</div><div class="msg bot">${answerHtml(x)}</div>`).join('')}
       </div>
       ${askLog.length ? '' : `<div class="pill-row center">${SUGGESTED.map((q) => `<button class="chip ask-chip" type="button">${esc(q)}</button>`).join('')}</div>`}
       <form class="chat-input" id="askForm"><input type="text" id="askInput" placeholder="Ask a question" aria-label="Your question" autocomplete="off"><button class="btn" type="submit">Ask</button></form>
-      ${askLog.length ? '<p class="center small"><button class="link-btn" id="clearChat" type="button">Clear</button></p>' : ''}
+      <p class="center small ask-links"><a href="#/ask/history">Your question history</a>${askLog.length ? ' · <button class="link-btn" id="clearChat" type="button">Clear chat</button>' : ''}</p>
     </div>`;
   }
   function bindAsk() {
@@ -499,15 +532,15 @@
 
   /* Employee's own history */
   let histFilter = 'all';
-  const HIST_FILTERS = [['all', 'All'], ['answered', 'Answered'], ['open', 'Waiting on L&D']];
-  const filterLog = (list, f) => list.filter((e) => f === 'all' || (f === 'answered' ? S.askStatus(e).key === 'answered' : S.askStatus(e).key !== 'answered'));
+  const HIST_FILTERS = [['all', 'All'], ['answered', 'Answered'], ['requested', 'Requested']];
+  const filterLog = (list, f) => list.filter((e) => f === 'all' || (f === 'answered' ? S.askStatus(e).answered : S.askStatus(e).key === 'requested'));
   function viewAskHistory() {
     const me = S.me();
     const list = S.askHistory(me.id);
     const shown = filterLog(list, histFilter);
     return `<div class="narrow"><a href="#/ask" class="small">← Ask</a>
       <h1>Your questions</h1>
-      <p class="muted small">Everything you've asked, with the answer and its source. Questions Ask couldn't answer go to L&amp;D, and you can follow them here. Your team lead and L&amp;D can also see this history.</p>
+      <p class="muted small">Everything you've asked, with the answer and its source. Questions Ask couldn't answer are sent to L&amp;D as requests. When an answer is added, it shows up here and in your Learn to-do list. Your team lead and L&amp;D can also see this history.</p>
       <div class="pill-row hist-filters">${HIST_FILTERS.map(([k, l]) => `<button class="chip ${histFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${filterLog(list, k).length}</span></button>`).join('')}</div>
       <div class="card list log">${shown.map((e) => logRow(e, false)).join('') || '<div class="empty">No questions yet.</div>'}</div></div>`;
   }
@@ -550,8 +583,8 @@
   }
   function askSection(u) {
     const list = S.askHistory(u.id);
-    const open = list.filter((e) => S.askStatus(e).key !== 'answered').length;
-    return `<div class="row spread section-title"><h2 style="margin:0">Questions asked <span class="muted small">${list.length} total${open ? ' · ' + open + ' waiting on L&amp;D' : ''}</span></h2>${list.length > 3 ? `<a class="small" href="#/team/${u.id}/ask">View all</a>` : ''}</div>
+    const open = list.filter((e) => S.askStatus(e).key === 'requested').length;
+    return `<div class="row spread section-title"><h2 style="margin:0">Questions asked <span class="muted small">${list.length} total${open ? ' · ' + open + ' requested' : ''}</span></h2>${list.length > 3 ? `<a class="small" href="#/team/${u.id}/ask">View all</a>` : ''}</div>
       <div class="card list log">${list.slice(0, 3).map((e) => logRow(e, false)).join('') || '<div class="empty">No questions asked yet.</div>'}</div>`;
   }
   function viewMemberAsk(id) {
@@ -581,7 +614,8 @@
     const reqN = S.state.submissions.filter((s) => s.status === 'new').length;
     return `<div class="row spread manage-head"><div class="tabs">
         <a href="#/manage" class="${active === 'register' ? 'active' : ''}">Register</a>
-        <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap${reqN ? `<span class="count">${reqN}</span>` : ''}</a>
+        <a href="#/manage/requests" class="${active === 'requests' ? 'active' : ''}">Requests${reqN ? `<span class="count">${reqN}</span>` : ''}</a>
+        <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap</a>
         <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a></div>
         <button class="btn btn-sm" id="newDocBtn" type="button">+ New document</button></div>`;
   }
@@ -778,24 +812,116 @@
   const COLS = [['idea', 'Idea'], ['planned', 'Planned'], ['progress', 'In progress'], ['review', 'Under review'], ['done', 'Completed']];
   const prioClass = { High: 'danger', Med: 'warn', Low: '' };
   function viewRoadmap() {
-    const reqs = S.state.submissions.filter((s) => s.status === 'new');
-    const typeLabel = { question: 'Question', topic: 'Topic idea', request: 'Doc request', problem: 'Problem', content: 'SME content', ask: 'From Ask · no answer found' };
     return manageTabs('roadmap') + `
       <div class="board">
-        <div class="col requests"><div class="col-head">Requests <span class="count">${reqs.length}</span></div>
-          ${reqs.map((s) => `<div class="kcard ${s.type === 'ask' ? 'from-ask' : ''}"><span class="sub">${s.type === 'ask' && s.note && /not helpful/.test(s.note) ? 'From Ask · answer not helpful' : typeLabel[s.type] || s.type}${s.type === 'ask' ? '' : ' · ' + esc(S.user(s.user).name)} · ${fmtDate(s.date)}</span><p>${esc(s.text)}</p>
-            ${s.type === 'ask' ? `<span class="sub">Asked ${s.askers.length}× by ${[...new Set(s.askers.map((a) => a.user))].map((id) => esc(firstName(S.user(id)))).join(', ')}</span>${s.note ? `<span class="sub"><em>${esc(s.note)}</em></span>` : ''}` : ''}
-            <div class="row"><button class="btn btn-sm req-add" data-id="${s.id}" type="button">Add to roadmap</button><button class="link-btn small req-dismiss" data-id="${s.id}" type="button">Dismiss</button></div></div>`).join('') || '<p class="muted small">No new requests.</p>'}
-        </div>
         ${COLS.map(([k, l]) => {
           const items = S.state.roadmap.filter((r) => r.status === k);
           return `<div class="col"><div class="col-head">${l} <span class="muted">${items.length}</span></div>
             ${items.map((r) => `<button class="kcard rm-item" data-id="${r.id}" type="button"><strong>${esc(r.title)}</strong>
-              <span class="pill-row"><span class="badge ${prioClass[r.priority]}">${r.priority}</span><span class="badge">${esc(r.type)}</span><span class="badge">${esc(r.effort)}</span></span></button>`).join('')}
+              <span class="pill-row"><span class="badge ${prioClass[r.priority]}">${r.priority}</span><span class="badge">${esc(r.type)}</span><span class="badge">${esc(r.effort)}</span></span>
+              ${r.fromRequest ? '<span class="sub">From a request</span>' : ''}</button>`).join('')}
             ${k === 'idea' ? '<button class="link-btn small" id="addIdea" type="button">+ Add</button>' : ''}</div>`;
         }).join('')}
       </div>`;
   }
+
+  /* ---------- Requests: everything people (and Ask) send to L&D ---------- */
+  const REQ_TYPE = { question: 'Question', topic: 'Topic idea', request: 'Document request', problem: 'Problem', content: 'SME content', ask: 'From Ask · no answer found' };
+  const REQ_STATUS = { new: ['New', 'tag-gold'], done: ['On roadmap', 'tag-ink'], answered: ['Answered', 'tag-ok'], declined: ['Closed', 'tag-muted'] };
+  let reqFilter = 'new', reqQuery = '';
+  function reqCard(sub) {
+    const askers = S.requestAskers(sub);
+    const isAsk = sub.type === 'ask';
+    const label = isAsk && sub.note && /not helpful/.test(sub.note) ? 'From Ask · answer not helpful' : REQ_TYPE[sub.type] || sub.type;
+    const [stL, stC] = REQ_STATUS[sub.status] || ['', ''];
+    const wordings = isAsk ? sub.logIds.map((lid) => (S.state.askLog || []).find((e) => e.id === lid)).filter(Boolean) : [];
+    return `<div class="req-card ${isAsk ? 'from-ask' : ''}">
+      <div class="row spread"><span class="sub">${esc(label)} · ${fmtDate(sub.date)}</span><span class="tag ${stC}">${stL}</span></div>
+      <strong class="req-text">${esc(sub.text)}</strong>
+      <span class="sub">${isAsk ? `Asked ${sub.askers.length}× by ` : 'From '}${askers.map((id) => esc(isAsk ? firstName(S.user(id)) : S.user(id).name)).join(', ')}</span>
+      ${sub.note ? `<span class="sub"><em>${esc(sub.note)}</em></span>` : ''}
+      ${wordings.length > 1 ? `<details class="wordings"><summary>How it was asked</summary>${wordings.map((e) => `<div class="small">“${esc(e.q)}” · ${esc(firstName(S.user(e.user)))}, ${fmtAt(e.at)}</div>`).join('')}</details>` : ''}
+      ${sub.status === 'answered' ? `<div class="req-answer"><span class="sub">Answered ${fmtDate(sub.answer.date)} · sent to ${askers.length} ${askers.length === 1 ? 'person' : 'people'}</span><p>${esc(sub.answer.text)}</p>${sub.answer.ref ? `<a class="chip chip-sm" href="${sourceHref(sub.answer)}">${esc(sub.answer.label)}</a>` : ''}</div>` : ''}
+      ${sub.status === 'declined' && sub.reply ? `<div class="req-answer"><span class="sub">Closed ${fmtDate(sub.closedOn)}</span><p>${esc(sub.reply)}</p></div>` : ''}
+      ${sub.status === 'new' || sub.status === 'done' ? `<div class="row req-actions">
+        ${['question', 'ask'].includes(sub.type) ? `<button class="btn btn-sm req-answer-btn" data-id="${sub.id}" type="button">Answer</button>` : ''}
+        ${sub.status === 'new' ? `<button class="btn btn-sm btn-ghost req-add" data-id="${sub.id}" type="button">Add to roadmap</button>` : ''}
+        <button class="link-btn small req-close" data-id="${sub.id}" type="button">Close</button></div>` : ''}
+    </div>`;
+  }
+  function viewRequests() {
+    const all = S.state.submissions;
+    const filters = [['new', 'New'], ['done', 'On roadmap'], ['answered', 'Answered'], ['declined', 'Closed'], ['all', 'All']];
+    const q = reqQuery.toLowerCase();
+    const shown = all.filter((x) => (reqFilter === 'all' || x.status === reqFilter) && (!q || x.text.toLowerCase().includes(q)))
+      .sort((a, b) => ((b.askers ? b.askers.length : 1) - (a.askers ? a.askers.length : 1)) || (a.date < b.date ? 1 : -1));
+    return manageTabs('requests') + `
+      <div class="row toolbar">
+        <input type="search" id="reqSearch" placeholder="Search requests" value="${esc(reqQuery)}">
+        <div class="pill-row">${filters.map(([k, l]) => `<button class="chip ${reqFilter === k ? 'active' : ''}" data-f="${k}" type="button">${l} <span class="chip-n">${k === 'all' ? all.length : all.filter((x) => x.status === k).length}</span></button>`).join('')}</div>
+      </div>
+      <div class="req-grid">${shown.map(reqCard).join('') || '<div class="card empty">Nothing here.</div>'}</div>`;
+  }
+  function answerModal(sub) {
+    const docs = S.state.documents.filter((d) => d.status === 'active').sort((a, b) => a.title.localeCompare(b.title));
+    const guides = (S.state.systems || []).flatMap((x) => x.guides.map((g) => ({ ref: x.id + ':' + g.id, label: x.name + ' › ' + g.title, g })));
+    const n = S.requestAskers(sub).length;
+    openModal(`<h2 id="modalTitle">Answer this question</h2>
+      <p class="muted small">“${esc(sub.text)}”</p>
+      <div class="field"><label for="aKind">Where is the answer?</label><select id="aKind"><option value="doc">A document in Refer</option><option value="guide">A how-to guide in Navigate</option><option value="none">No document — written answer only</option></select></div>
+      <div class="field" id="aDocWrap"><label for="aDoc">Document</label><select id="aDoc">${docs.map((d) => `<option value="${d.id}">${esc(d.title)}</option>`).join('')}</select>
+        <label for="aSec" style="margin-top:8px">Section</label><select id="aSec"></select></div>
+      <div class="field" id="aGuideWrap" hidden><label for="aGuide">Guide</label><select id="aGuide">${guides.map((g) => `<option value="${g.ref}">${esc(g.label)}</option>`).join('')}</select></div>
+      <div class="field"><label for="aText">Short answer</label><textarea id="aText" class="short"></textarea></div>
+      <p class="small muted">The answer goes into ${n === 1 ? 'the asker\'s' : 'the ' + n + ' askers\''} Learn to-do list and their question history.</p>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="aSend" type="button">Send answer</button></div>`, (card) => {
+      const kind = $('#aKind', card), docSel = $('#aDoc', card), secSel = $('#aSec', card), gSel = $('#aGuide', card), txt = $('#aText', card);
+      const fillSecs = () => { const d = S.doc(docSel.value); secSel.innerHTML = S.current(d).sections.map((x, i) => `<option value="${i}">${esc(x.h)}</option>`).join(''); prefill(); };
+      const prefill = () => {
+        if (txt.dataset.edited) return;
+        if (kind.value === 'doc') txt.value = plain(S.current(S.doc(docSel.value)).sections[+secSel.value || 0].body).replace(/\n/g, ' ');
+        else if (kind.value === 'guide') txt.value = guides.find((g) => g.ref === gSel.value).g.steps.join(' ').replace(/\*\*/g, '');
+      };
+      txt.addEventListener('input', () => { txt.dataset.edited = '1'; });
+      kind.addEventListener('change', () => { $('#aDocWrap', card).hidden = kind.value !== 'doc'; $('#aGuideWrap', card).hidden = kind.value !== 'guide'; delete txt.dataset.edited; prefill(); });
+      docSel.addEventListener('change', () => { delete txt.dataset.edited; fillSecs(); });
+      secSel.addEventListener('change', () => { delete txt.dataset.edited; prefill(); });
+      gSel.addEventListener('change', () => { delete txt.dataset.edited; prefill(); });
+      fillSecs();
+      $('#aSend', card).addEventListener('click', () => {
+        const text = txt.value.trim(); if (!text) return txt.focus();
+        let ans = { text };
+        if (kind.value === 'doc') { const d = S.doc(docSel.value), v = S.current(d); ans = Object.assign(ans, { kind: 'doc', ref: d.id, v: v.v, label: d.title + ' › ' + v.sections[+secSel.value].h }); }
+        if (kind.value === 'guide') { const g = guides.find((x) => x.ref === gSel.value); ans = Object.assign(ans, { kind: 'guide', ref: g.ref, label: g.label }); }
+        S.answerRequest(sub.id, ans); closeModal();
+        toast(`Answer sent to ${n} ${n === 1 ? 'person' : 'people'}`); rerender();
+      });
+    });
+  }
+  function closeModalFor(sub) {
+    openModal(`<h2 id="modalTitle">Close this request</h2><p class="muted small">“${esc(sub.text)}”</p>
+      <div class="field"><label for="cReply">Note to the ${S.requestAskers(sub).length === 1 ? 'person' : 'people'} who asked <span class="muted">(optional)</span></label><textarea id="cReply" class="short" placeholder="e.g. Please check with your supervisor for this one."></textarea></div>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="cSend" type="button">Close request</button></div>`, (card) => {
+      $('#cSend', card).addEventListener('click', () => { S.closeRequest(sub.id, $('#cReply', card).value.trim()); closeModal(); toast('Request closed'); rerender(); });
+    });
+  }
+  function bindRequests() {
+    bindNewDoc();
+    const find = (id) => S.state.submissions.find((x) => x.id === id);
+    const inp = $('#reqSearch');
+    inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') { reqQuery = inp.value; rerender(); } });
+    inp.addEventListener('change', () => { reqQuery = inp.value; rerender(); });
+    $$('.toolbar .chip').forEach((c) => c.addEventListener('click', () => { reqFilter = c.dataset.f; rerender(); }));
+    $$('.req-answer-btn').forEach((b) => b.addEventListener('click', () => answerModal(find(b.dataset.id))));
+    $$('.req-close').forEach((b) => b.addEventListener('click', () => closeModalFor(find(b.dataset.id))));
+    $$('.req-add').forEach((b) => b.addEventListener('click', () => {
+      const sub = find(b.dataset.id);
+      sub.status = 'done';
+      S.state.roadmap.push({ id: 'R' + Date.now(), title: sub.text.slice(0, 70) + (sub.text.length > 70 ? '…' : ''), status: 'idea', priority: 'Med', work: 'Create New', effort: 'Med', type: 'SOP', fromRequest: sub.id, notes: (sub.type === 'ask' ? 'Asked ' + sub.askers.length + '× via Ask: ' : 'Requested by ' + S.user(sub.user).name + ': ') + sub.text });
+      S.save(); toast('Added to Roadmap → Ideas'); rerender();
+    }));
+  }
+
   function roadmapModal(r) {
     const isNew = !r;
     r = r || { id: 'R' + Date.now(), title: '', status: 'idea', priority: 'Med', work: 'Create New', effort: 'Med', type: 'SOP', notes: '' };
@@ -825,13 +951,6 @@
     bindNewDoc();
     $$('.rm-item').forEach((b) => b.addEventListener('click', () => roadmapModal(S.state.roadmap.find((r) => r.id === b.dataset.id))));
     const add = $('#addIdea'); if (add) add.addEventListener('click', () => roadmapModal(null));
-    $$('.req-add').forEach((b) => b.addEventListener('click', () => {
-      const s = S.state.submissions.find((x) => x.id === b.dataset.id);
-      s.status = 'done';
-      S.state.roadmap.push({ id: 'R' + Date.now(), title: s.text.slice(0, 70) + (s.text.length > 70 ? '…' : ''), status: 'idea', priority: 'Med', work: 'Create New', effort: 'Med', type: 'SOP', notes: 'Requested by ' + S.user(s.user).name + ': ' + s.text });
-      S.save(); toast('Added to Ideas'); rerender();
-    }));
-    $$('.req-dismiss').forEach((b) => b.addEventListener('click', () => { S.state.submissions.find((x) => x.id === b.dataset.id).status = 'declined'; S.save(); rerender(); }));
   }
 
   /* ---------- Ask log: every question across the company ---------- */
@@ -883,6 +1002,7 @@
     if (a === 'learn') {
       if (b === 'module') { html = viewModule(c, d); bind = () => bindModule(c); }
       else if (b === 'update') { html = viewUpdate(c); bind = () => bindUpdate(c); }
+      else if (b === 'answer') { html = viewAnswerNotice(c); bind = () => bindAnswerNotice(c); }
       else if (b === 'record') html = viewRecord();
       else html = viewLearn();
     } else if (a === 'refer') {
@@ -907,6 +1027,7 @@
       else if (b === 'doc' && d === 'v') html = viewArchivedVersion(c, e);
       else if (b === 'doc') { html = viewManageDoc(c); bind = () => bindManageDoc(c); }
       else if (b === 'edit') { html = viewEdit(c); bind = () => bindEdit(c); }
+      else if (b === 'requests') { html = viewRequests(); bind = bindRequests; }
       else if (b === 'roadmap') { html = viewRoadmap(); bind = bindRoadmap; }
       else if (b === 'ask') { html = viewAskLog(); bind = bindAskLog; }
       else { html = viewRegister(); bind = bindRegister; }

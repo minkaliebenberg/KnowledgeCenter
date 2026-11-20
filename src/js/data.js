@@ -364,8 +364,12 @@
       { id: 'S3', user: 'u4', type: 'ask', date: '2026-11-04', status: 'new', text: 'What is the restocking fee for a fully mounted return?', askers: [{ user: 'u4', at: '2026-11-04T09:41' }, { user: 'u8', at: '2026-11-07T14:05' }, { user: 'u2', at: '2026-11-08T11:20' }], logIds: ['A3', 'A9', 'A12'] },
       { id: 'S4', user: 'u1', type: 'ask', date: '2026-11-06', status: 'new', text: 'What is the dress code?', askers: [{ user: 'u1', at: '2026-11-06T08:52' }], logIds: ['A6'] },
       { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful: "Needed to know who approves when the supervisor is away."', askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
-      { id: 'S5', user: 'u2', type: 'ask', date: '2026-10-21', status: 'done', text: 'Do we charge extra to rhodium plate a white gold repair?', askers: [{ user: 'u2', at: '2026-10-21T15:30' }], logIds: ['A1'] },
+      { id: 'S5', user: 'u2', type: 'ask', date: '2026-10-21', status: 'answered', text: 'Do we charge extra to rhodium plate a white gold repair?', askers: [{ user: 'u2', at: '2026-10-21T15:30' }], logIds: ['A1'],
+        answer: { kind: 'doc', ref: 'D39', label: 'Repair Fee › Repair fees', v: '1.0', text: 'Yes. Rhodium plating is charged as its own line on white gold repairs. The current amount is in the Repair Fee guide.', date: '2026-11-05', by: 'u5' } },
     ],
+
+    /* Personal "your question has an answer" notices — shown at the top of the asker's Learn to-do */
+    notices: [{ id: 'N1', user: 'u2', subId: 'S5', date: '2026-11-05', read: false }],
 
     /* ---------------------------------------------------------------------------
        ASK LOG — every question asked, with what Ask answered and its sources.
