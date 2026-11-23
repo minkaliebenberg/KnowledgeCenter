@@ -19,10 +19,11 @@
     today: '2026-11-09',
 
     departments: [
-      { id: 'NC', name: 'Noam Carver Team' },
-      { id: 'CS', name: 'Customer Service' },
-      { id: 'PR', name: 'Production' },
-      { id: 'AR', name: 'Accounting' },
+      /* lead = default team lead for everyone in the department (can be overridden per person) */
+      { id: 'NC', name: 'Noam Carver Team', lead: 'u3' },
+      { id: 'CS', name: 'Customer Service', lead: 'u7' },
+      { id: 'PR', name: 'Production', lead: 'u7' },
+      { id: 'AR', name: 'Accounting', lead: 'u7' },
     ],
 
     /* Know folders = the SharePoint library folders */
@@ -38,15 +39,15 @@
     types: ['SOP', 'Policy', 'Manual', 'Quick Reference', 'Process / Workflow', 'Directory', 'Form', 'Video', 'Decision Map', 'Glossary'],
 
     users: [
-      { id: 'u1', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u4', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u2', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
-      { id: 'u8', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: 'u7', start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
-      { id: 'u6', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: 'u7', start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
-      { id: 'u9', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: 'u7', start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
-      { id: 'u3', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
-      { id: 'u7', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
-      { id: 'u5', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
+      { id: 'u1', email: 'pshah@crownring.com', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: null, start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u4', email: 'jreyes@crownring.com', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: null, start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u2', email: 'mlee@crownring.com', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: null, start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
+      { id: 'u8', email: 'amartin@crownring.com', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: null, start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
+      { id: 'u6', email: 'snovak@crownring.com', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: null, start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
+      { id: 'u9', email: 'tbrooks@crownring.com', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: null, start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
+      { id: 'u3', email: 'dokafor@crownring.com', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
+      { id: 'u7', email: 'rtran@crownring.com', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
+      { id: 'u5', email: 'mliebenberg@crownring.com', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
     ],
 
     /* ---------------------------------------------------------------------------
@@ -363,7 +364,7 @@
       /* Sent automatically by Ask when it could not find an answer. Repeat questions are grouped. */
       { id: 'S3', user: 'u4', type: 'ask', date: '2026-11-04', status: 'new', text: 'What is the restocking fee for a fully mounted return?', askers: [{ user: 'u4', at: '2026-11-04T09:41' }, { user: 'u8', at: '2026-11-07T14:05' }, { user: 'u2', at: '2026-11-08T11:20' }], logIds: ['A3', 'A9', 'A12'] },
       { id: 'S4', user: 'u1', type: 'ask', date: '2026-11-06', status: 'new', text: 'What is the dress code?', askers: [{ user: 'u1', at: '2026-11-06T08:52' }], logIds: ['A6'] },
-      { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful: "Needed to know who approves when the supervisor is away."', askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
+      { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful', details: [{ user: 'u4', at: '2026-11-06T11:49', text: 'Needed to know who approves when the supervisor is away.' }], askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
       { id: 'S5', user: 'u2', type: 'ask', date: '2026-10-21', status: 'answered', text: 'Do we charge extra to rhodium plate a white gold repair?', askers: [{ user: 'u2', at: '2026-10-21T15:30' }], logIds: ['A1'],
         answer: { kind: 'doc', ref: 'D39', label: 'Repair Fee › Repair fees', v: '1.0', text: 'Yes. Rhodium plating is charged as its own line on white gold repairs. The current amount is in the Repair Fee guide.', date: '2026-11-05', by: 'u5' } },
     ],

@@ -372,6 +372,19 @@ h1 { font-weight: 500; letter-spacing: .01em; }
 .tag[data-tip] { cursor: help; }
 .notice-title { font-style: italic; font-weight: 500; }
 
+.fb-more { margin-top: 10px; }
+.fb-more label { font-size: 13px; font-weight: 500; color: var(--text); }
+.fb-more textarea { min-height: 64px; margin-bottom: 8px; font-size: 14px; }
+.req-detail { font-size: 14px; padding: 6px 10px; border-left: 2px solid var(--gold); background: var(--surface-2); border-radius: 0 6px 6px 0; }
+
+/* ---- Manage → People ---- */
+.sync-note { margin: -4px 0 4px; }
+.dept-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.dept-card { display: flex; flex-direction: column; gap: 2px; text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; color: var(--text); }
+.dept-card:hover { border-color: var(--gold); }
+.dept-card .sub { color: var(--muted); font-size: 13px; }
+.dept-card.add { align-items: center; justify-content: center; color: var(--muted); border-style: dashed; }
+
 </style>
 </head>
 <body>
@@ -423,10 +436,11 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     today: '2026-11-09',
 
     departments: [
-      { id: 'NC', name: 'Noam Carver Team' },
-      { id: 'CS', name: 'Customer Service' },
-      { id: 'PR', name: 'Production' },
-      { id: 'AR', name: 'Accounting' },
+      /* lead = default team lead for everyone in the department (can be overridden per person) */
+      { id: 'NC', name: 'Noam Carver Team', lead: 'u3' },
+      { id: 'CS', name: 'Customer Service', lead: 'u7' },
+      { id: 'PR', name: 'Production', lead: 'u7' },
+      { id: 'AR', name: 'Accounting', lead: 'u7' },
     ],
 
     /* Know folders = the SharePoint library folders */
@@ -442,15 +456,15 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     types: ['SOP', 'Policy', 'Manual', 'Quick Reference', 'Process / Workflow', 'Directory', 'Form', 'Video', 'Decision Map', 'Glossary'],
 
     users: [
-      { id: 'u1', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u4', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
-      { id: 'u2', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: 'u3', start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
-      { id: 'u8', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: 'u7', start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
-      { id: 'u6', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: 'u7', start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
-      { id: 'u9', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: 'u7', start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
-      { id: 'u3', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
-      { id: 'u7', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
-      { id: 'u5', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
+      { id: 'u1', email: 'pshah@crownring.com', name: 'Priya Shah',   role: 'employee',   dept: 'NC', supervisor: null, start: '2026-10-26', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u4', email: 'jreyes@crownring.com', name: 'Jordan Reyes', role: 'employee',   dept: 'NC', supervisor: null, start: '2025-03-10', title: 'Customer Experience Specialist', deptHistory: [] },
+      { id: 'u2', email: 'mlee@crownring.com', name: 'Marcus Lee',   role: 'employee',   dept: 'NC', supervisor: null, start: '2024-06-03', title: 'Customer Experience Specialist', deptHistory: [{ dept: 'CS', from: '2024-06-03', to: '2026-09-01' }] },
+      { id: 'u8', email: 'amartin@crownring.com', name: 'Alex Martin',  role: 'employee',   dept: 'CS', supervisor: null, start: '2025-08-11', title: 'Customer Service Representative', deptHistory: [] },
+      { id: 'u6', email: 'snovak@crownring.com', name: 'Sam Novak',    role: 'employee',   dept: 'PR', supervisor: null, start: '2021-02-15', title: 'Production Coordinator', sme: 'PR', deptHistory: [] },
+      { id: 'u9', email: 'tbrooks@crownring.com', name: 'Taylor Brooks',role: 'employee',   dept: 'AR', supervisor: null, start: '2023-09-05', title: 'Accounting Clerk', sme: 'AR', deptHistory: [] },
+      { id: 'u3', email: 'dokafor@crownring.com', name: 'Dana Okafor',  role: 'supervisor', dept: 'NC', supervisor: null, start: '2022-01-10', title: 'Noam Carver Team Supervisor', sme: 'NC', deptHistory: [] },
+      { id: 'u7', email: 'rtran@crownring.com', name: 'Rob Tran',     role: 'supervisor', dept: 'PR', supervisor: null, start: '2020-05-04', title: 'Operations Supervisor', deptHistory: [] },
+      { id: 'u5', email: 'mliebenberg@crownring.com', name: 'Minka',        role: 'admin',      dept: 'NC', supervisor: null, start: '2023-04-03', title: 'Learning & Development Lead', deptHistory: [] },
     ],
 
     /* ---------------------------------------------------------------------------
@@ -767,7 +781,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       /* Sent automatically by Ask when it could not find an answer. Repeat questions are grouped. */
       { id: 'S3', user: 'u4', type: 'ask', date: '2026-11-04', status: 'new', text: 'What is the restocking fee for a fully mounted return?', askers: [{ user: 'u4', at: '2026-11-04T09:41' }, { user: 'u8', at: '2026-11-07T14:05' }, { user: 'u2', at: '2026-11-08T11:20' }], logIds: ['A3', 'A9', 'A12'] },
       { id: 'S4', user: 'u1', type: 'ask', date: '2026-11-06', status: 'new', text: 'What is the dress code?', askers: [{ user: 'u1', at: '2026-11-06T08:52' }], logIds: ['A6'] },
-      { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful: "Needed to know who approves when the supervisor is away."', askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
+      { id: 'S6', user: 'u4', type: 'ask', date: '2026-11-06', status: 'new', text: 'Who approves a rush order?', note: 'Answer marked not helpful', details: [{ user: 'u4', at: '2026-11-06T11:49', text: 'Needed to know who approves when the supervisor is away.' }], askers: [{ user: 'u4', at: '2026-11-06T11:47' }], logIds: ['A8'] },
       { id: 'S5', user: 'u2', type: 'ask', date: '2026-10-21', status: 'answered', text: 'Do we charge extra to rhodium plate a white gold repair?', askers: [{ user: 'u2', at: '2026-10-21T15:30' }], logIds: ['A1'],
         answer: { kind: 'doc', ref: 'D39', label: 'Repair Fee › Repair fees', v: '1.0', text: 'Yes. Rhodium plating is charged as its own line on white gold repairs. The current amount is in the Repair Fee guide.', date: '2026-11-05', by: 'u5' } },
     ],
@@ -916,7 +930,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
    survives a refresh. "Reset demo" restores the seed data.
    ========================================================================== */
 (function () {
-  const KEY = 'crownring-kc-demo-v6';
+  const KEY = 'crownring-kc-demo-v8';
   const clone = (o) => JSON.parse(JSON.stringify(o));
 
   let state;
@@ -1034,7 +1048,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
   /* Employees who must acknowledge a pushed version, and who has. */
   S.ackStats = (d, v) => {
     const ref = d.id + '@' + v.v;
-    const need = state.users.filter((u) => u.role !== 'admin' && appliesTo(d.depts, u) && u.start < v.date);
+    const need = state.users.filter((u) => u.role !== 'admin' && S.active(u) && appliesTo(d.depts, u) && u.start < v.date);
     const acked = state.completions.filter((c) => c.kind === 'update' && c.ref === ref);
     return { need, acked, pending: need.filter((u) => !acked.some((c) => c.user === u.id)) };
   };
@@ -1051,7 +1065,28 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     save();
   };
 
-  S.team = (u) => (u.role === 'admin' ? state.users.filter((x) => x.role !== 'admin') : state.users.filter((x) => x.supervisor === u.id));
+  /* ---------- PEOPLE ----------
+     In production, people, job titles, departments and managers come from the internal website / Microsoft 365.
+     L&D only sets Knowledge Center access, SME status and (if needed) a team-lead override. */
+  S.active = (u) => u.active !== false;
+  S.deptObj = (id) => state.departments.find((d) => d.id === id);
+  S.deptLead = (id) => { const d = S.deptObj(id); return d && d.lead ? S.user(d.lead) : null; };
+  S.leadOf = (u) => { if (u.supervisor) return S.user(u.supervisor); const l = S.deptLead(u.dept); return l && l.id !== u.id ? l : null; };
+  S.team = (u) => state.users.filter((x) => S.active(x) && x.id !== u.id && x.role !== 'admin' && (u.role === 'admin' || (S.leadOf(x) || {}).id === u.id));
+  S.leads = () => state.users.filter((x) => S.active(x) && (x.role === 'supervisor' || x.role === 'admin'));
+  S.savePerson = (id, f) => {
+    let u = id && S.user(id);
+    if (!u) { u = { id: 'u' + Date.now().toString(36), deptHistory: [], active: true, start: state.today }; state.users.push(u); }
+    if (u.dept && f.dept && f.dept !== u.dept) S.transfer(u.id, f.dept);
+    Object.assign(u, f);
+    if (!u.sme) delete u.sme;
+    save(); return u;
+  };
+  S.saveDept = (id, f) => {
+    let d = id && S.deptObj(id);
+    if (!d) { d = { id: (f.name.replace(/[^A-Za-z]/g, '').slice(0, 2).toUpperCase() || 'D') + Date.now().toString(36).slice(-2) }; state.departments.push(d); }
+    Object.assign(d, f); save(); return d;
+  };
 
   S.transfer = (userId, newDept) => {
     const u = S.user(userId);
@@ -1120,6 +1155,14 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     const e = (state.askLog || []).find((x) => x.id === id); if (!e) return null;
     e.helpful = helpful;
     if (helpful === false && !e.requestId) e.requestId = S.requestFromAsk(S.user(e.user), e.q, e.id, 'Answer marked not helpful').id;
+    save(); return e;
+  };
+  /* Extra detail an employee adds after marking an answer "not helpful" — saved on their log entry and the request */
+  S.addAskDetail = (id, text) => {
+    const e = (state.askLog || []).find((x) => x.id === id); if (!e || !text) return e;
+    e.note = text;
+    const sub = S.askSub(e);
+    if (sub) { sub.details = sub.details || []; sub.details.push({ user: e.user, at: nowStamp(), text }); }
     save(); return e;
   };
   S.askHistory = (userId) => (state.askLog || []).filter((e) => !userId || e.user === userId).slice().sort((a, b) => (a.at < b.at ? 1 : -1));
@@ -1281,7 +1324,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     if (S.isAdmin(me)) items.push(['manage', 'Manage', '']);
     $('#mainnav').innerHTML = items.map(([k, label, extra]) => `<a href="#/${k}" class="${route[0] === k ? 'active' : ''}">${label}${extra}</a>`).join('');
     const roleLabel = { employee: 'Employee', supervisor: 'Supervisor', admin: 'L&D Admin' };
-    $('#userSwitch').innerHTML = S.state.users.map((u) => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)} — ${roleLabel[u.role]}, ${esc(S.dept(u.dept))}${u.sme ? ' (SME)' : ''}</option>`).join('');
+    $('#userSwitch').innerHTML = S.state.users.map((u) => `<option value="${u.id}" ${u.id === me.id ? 'selected' : ''}>${esc(u.name)} — ${roleLabel[u.role]}, ${esc(S.dept(u.dept))}${u.sme ? ' (SME)' : ''}${S.active(u) ? '' : ' (inactive)'}</option>`).join('');
   }
   $('#userSwitch').addEventListener('change', (e) => {
     S.setMe(e.target.value);
@@ -1699,7 +1742,12 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       : `${md(t.s.body)}<p class="source">Source: <a href="#/refer/doc/${t.d.id}">${esc(t.d.title)} › ${esc(t.s.h)}</a></p>`;
     const fb = e.helpful === null
       ? `<div class="fb">Did this help? <button class="link-btn fb-btn" data-id="${e.id}" data-v="1" type="button">Yes</button> · <button class="link-btn fb-btn" data-id="${e.id}" data-v="0" type="button">No</button></div>`
-      : e.helpful ? '<div class="fb">Thanks for the feedback.</div>' : '<div class="fb">Thanks. I\'ve sent this to L&amp;D so the answer can be improved.</div>';
+      : e.helpful ? '<div class="fb">Thanks for the feedback.</div>'
+      : e.note ? '<div class="fb">Thanks. Your details were added to the request for L&amp;D.</div>'
+      : `<div class="fb">Thanks. I've sent this to L&amp;D so the answer can be improved.
+          <form class="fb-more" data-id="${e.id}"><label for="fbm-${e.id}">Want to add more detail? <span class="muted">(optional)</span></label>
+          <textarea id="fbm-${e.id}" class="short" placeholder="e.g. What were you actually trying to find out?"></textarea>
+          <div class="row"><button class="btn btn-sm" type="submit">Add to request</button></div></form></div>`;
     return body + fb;
   }
   function viewAsk() {
@@ -1725,6 +1773,13 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     $('#askForm').addEventListener('submit', (e) => { e.preventDefault(); go($('#askInput').value); });
     $$('.ask-chip').forEach((b) => b.addEventListener('click', () => go(b.textContent)));
     const clr = $('#clearChat'); if (clr) clr.addEventListener('click', () => { askLog = []; rerender(); });
+    $$('.fb-more').forEach((f) => f.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const text = $('textarea', f).value.trim(); if (!text) { $('textarea', f).focus(); return; }
+      const e = S.addAskDetail(f.dataset.id, text);
+      askLog.forEach((x) => { if (x.entry.id === e.id) x.entry = e; });
+      toast('Added to your request'); rerender();
+    }));
     $$('.fb-btn').forEach((b) => b.addEventListener('click', () => {
       const e = S.rateAsk(b.dataset.id, b.dataset.v === '1');
       askLog.forEach((x) => { if (x.entry.id === e.id) x.entry = e; });
@@ -1776,7 +1831,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     const todo = S.todo(u);
     return `<a href="#/team" class="small">← My Team</a>
       <div class="row spread"><div><h1>${esc(u.name)}</h1><p class="meta">${esc(u.title)} · ${esc(S.dept(u.dept))} · started ${fmtDate(u.start)}</p></div>
-        ${S.isAdmin(me) ? `<div><label for="xfer" class="small">Department</label><select id="xfer">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>` : ''}</div>
+        ${S.isAdmin(me) ? `<a class="btn btn-ghost btn-sm" href="#/manage/people/${u.id}">Edit in People</a>` : ''}</div>
       <div class="card"><div class="row spread"><strong>Progress</strong><span class="muted">${p.done} of ${p.total}</span></div><div class="big-bar">${bar(p.pct)}<span class="pct">${p.pct}%</span></div></div>
       <h2 class="section-title">To do (${todo.length})</h2>
       <div class="card list">${todo.map((it) => `<div class="list-row"><span class="row-ico ${it.kind === 'update' ? 'warn' : ''}">${it.kind === 'update' ? '!' : '▶'}</span><span class="grow">${esc(it.kind === 'update' ? it.x.doc.title + ' v' + it.x.version.v : it.m.title)}<span class="sub">${it.kind === 'update' ? 'Update' : S.STAGE_LABEL[it.m.stage]}</span></span></div>`).join('') || '<div class="empty">All caught up ✓</div>'}</div>
@@ -1818,7 +1873,8 @@ h1 { font-weight: 500; letter-spacing: .01em; }
         <a href="#/manage" class="${active === 'register' ? 'active' : ''}">Register</a>
         <a href="#/manage/requests" class="${active === 'requests' ? 'active' : ''}">Requests${reqN ? `<span class="count">${reqN}</span>` : ''}</a>
         <a href="#/manage/roadmap" class="${active === 'roadmap' ? 'active' : ''}">Roadmap</a>
-        <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a></div>
+        <a href="#/manage/ask" class="${active === 'ask' ? 'active' : ''}">Ask log</a>
+        <a href="#/manage/people" class="${active === 'people' ? 'active' : ''}">People</a></div>
         <button class="btn btn-sm" id="newDocBtn" type="button">+ New document</button></div>`;
   }
 
@@ -2041,7 +2097,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       <div class="row spread"><span class="sub">${esc(label)} · ${fmtDate(sub.date)}</span><span class="tag ${stC}">${stL}</span></div>
       <strong class="req-text">${esc(sub.text)}</strong>
       <span class="sub">${isAsk ? `Asked ${sub.askers.length}× by ` : 'From '}${askers.map((id) => esc(isAsk ? firstName(S.user(id)) : S.user(id).name)).join(', ')}</span>
-      ${sub.note ? `<span class="sub"><em>${esc(sub.note)}</em></span>` : ''}
+      ${(sub.details || []).map((d) => `<div class="req-detail">“${esc(d.text)}” <span class="muted">— ${esc(firstName(S.user(d.user)))}, ${fmtAt(d.at)}</span></div>`).join('')}
       ${wordings.length > 1 ? `<details class="wordings"><summary>How it was asked</summary>${wordings.map((e) => `<div class="small">“${esc(e.q)}” · ${esc(firstName(S.user(e.user)))}, ${fmtAt(e.at)}</div>`).join('')}</details>` : ''}
       ${sub.status === 'answered' ? `<div class="req-answer"><span class="sub">Answered ${fmtDate(sub.answer.date)} · sent to ${askers.length} ${askers.length === 1 ? 'person' : 'people'}</span><p>${esc(sub.answer.text)}</p>${sub.answer.ref ? `<a class="chip chip-sm" href="${sourceHref(sub.answer)}">${esc(sub.answer.label)}</a>` : ''}</div>` : ''}
       ${sub.status === 'declined' && sub.reply ? `<div class="req-answer"><span class="sub">Closed ${fmtDate(sub.closedOn)}</span><p>${esc(sub.reply)}</p></div>` : ''}
@@ -2155,6 +2211,145 @@ h1 { font-weight: 500; letter-spacing: .01em; }
     const add = $('#addIdea'); if (add) add.addEventListener('click', () => roadmapModal(null));
   }
 
+  /* ---------- People: employees, departments, team leads, access ---------- */
+  const ACCESS = { employee: 'Employee', supervisor: 'Team lead', admin: 'L&D admin' };
+  let pplDept = 'all', pplQuery = '', pplInactive = false;
+  function viewPeople() {
+    const users = S.state.users;
+    const q = pplQuery.toLowerCase();
+    const shown = users.filter((u) => (pplInactive ? !S.active(u) : S.active(u)) && (pplDept === 'all' || u.dept === pplDept)
+      && (!q || (u.name + ' ' + (u.title || '') + ' ' + (u.email || '')).toLowerCase().includes(q))).sort((a, b) => a.name.localeCompare(b.name));
+    const inactiveN = users.filter((u) => !S.active(u)).length;
+    return manageTabs('people') + `
+      <h2 class="section-title">Departments</h2>
+      <div class="dept-grid">${S.state.departments.map((d) => {
+        const lead = d.lead && S.user(d.lead);
+        const n = users.filter((u) => S.active(u) && u.dept === d.id).length;
+        return `<button class="dept-card" data-id="${d.id}" type="button"><strong>${esc(d.name)}</strong><span class="sub">Lead: ${lead ? esc(lead.name) : '—'}</span><span class="sub">${n} ${n === 1 ? 'person' : 'people'}</span></button>`;
+      }).join('')}<button class="dept-card add" id="addDept" type="button">+ Add department</button></div>
+      <div class="row spread section-title"><h2 style="margin:0">People</h2><div class="row"><button class="btn btn-sm btn-ghost" id="importPeople" type="button">Import from Excel / CSV</button><button class="btn btn-sm" id="addPerson" type="button">+ Add person</button></div></div>
+      <div class="row toolbar">
+        <input type="search" id="pplSearch" placeholder="Search by name, title or email" value="${esc(pplQuery)}">
+        <div class="pill-row">${[{ id: 'all', name: 'All' }, ...S.state.departments].map((d) => `<button class="chip ${pplDept === d.id && !pplInactive ? 'active' : ''}" data-d="${d.id}" type="button">${esc(d.name)}</button>`).join('')}
+          ${inactiveN ? `<button class="chip ${pplInactive ? 'active' : ''}" data-d="inactive" type="button">Inactive <span class="chip-n">${inactiveN}</span></button>` : ''}</div>
+      </div>
+      <div class="card table-wrap"><table id="pplTable"><thead><tr><th>Name</th><th>Department</th><th>Team lead</th><th>Access</th><th>Started</th><th>Training</th></tr></thead><tbody>
+      ${shown.map((u) => {
+        const lead = u.role === 'admin' ? null : S.leadOf(u);
+        const p = S.progress(u);
+        return `<tr class="click" data-id="${u.id}"><td><strong>${esc(u.name)}</strong>${u.sme ? ' <span class="tag tag-muted">SME</span>' : ''}<br><span class="muted small">${esc(u.title || '')}${u.email ? ' · ' + esc(u.email) : ''}</span></td>
+          <td>${esc(S.dept(u.dept))}</td>
+          <td>${lead ? esc(lead.name) + (u.supervisor ? '' : ' <span class="muted small">(dept. lead)</span>') : '<span class="muted">—</span>'}</td>
+          <td>${ACCESS[u.role]}</td><td class="nowrap">${fmtDate(u.start)}</td>
+          <td class="cell-pct">${u.role === 'admin' ? '<span class="muted">—</span>' : p.pct + '%' + bar(p.pct)}</td></tr>`;
+      }).join('') || '<tr><td colspan="6" class="empty">No one matches.</td></tr>'}
+      </tbody></table></div>`;
+  }
+  function personModal(u) {
+    const isNew = !u;
+    u = u || { name: '', title: '', dept: S.state.departments[0].id, supervisor: null, role: 'employee', start: S.state.today };
+    const leadOpts = (dept) => { const dl = S.deptLead(dept); return `<option value="">Department lead${dl ? ' (' + esc(dl.name) + ')' : ''}</option>` + S.leads().filter((x) => x.id !== u.id).map((x) => `<option value="${x.id}" ${u.supervisor === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join(''); };
+    openModal(`<h2 id="modalTitle">${isNew ? 'Add person' : esc(u.name)}</h2>
+      ${isNew ? '<p class="small muted">They sign in with their CrownRing Microsoft account. Only people on this list can access the Knowledge Center.</p>' : ''}
+      <div class="grid-2col">
+        <div class="field"><label for="pName">Name</label><input type="text" id="pName" value="${esc(u.name)}"></div>
+        <div class="field"><label for="pEmail">Work email</label><input type="text" id="pEmail" value="${esc(u.email || '')}" placeholder="name@crownring.com"></div>
+        <div class="field"><label for="pTitle">Job title</label><input type="text" id="pTitle" value="${esc(u.title || '')}"></div>
+        <div class="field"><label for="pDept">Department</label><select id="pDept">${S.state.departments.map((d) => `<option value="${d.id}" ${d.id === u.dept ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></div>
+        <div class="field"><label for="pLead">Team lead</label><select id="pLead">${leadOpts(u.dept)}</select></div>
+        <div class="field"><label for="pRole">Knowledge Center access</label><select id="pRole">${Object.entries(ACCESS).map(([k, l]) => `<option value="${k}" ${u.role === k ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+        <div class="field"><label for="pStart">Start date</label><input type="text" id="pStart" value="${esc(u.start)}" placeholder="YYYY-MM-DD"></div>
+      </div>
+      <div class="field"><label class="opt" style="margin:0"><input type="checkbox" id="pSme" ${u.sme ? 'checked' : ''}><span>Subject-matter expert<br><span class="muted small">Can submit content for their department to L&amp;D</span></span></label></div>
+      <p class="small muted" id="pHint">${isNew ? 'Their training to-do list is built automatically from their department.' : ''}</p>
+      <div class="row end">${!isNew ? `<button class="link-btn small" id="pActive" type="button" style="margin-right:auto">${S.active(u) ? 'Deactivate' : 'Reactivate'}</button>` : ''}
+        <button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="pSave" type="button">${isNew ? 'Add person' : 'Save'}</button></div>`, (card) => {
+      const dept = $('#pDept', card), hint = $('#pHint', card);
+      dept.addEventListener('change', () => {
+        $('#pLead', card).innerHTML = leadOpts(dept.value);
+        if (!isNew) hint.textContent = dept.value !== u.dept ? 'Their completed training stays on record. Only the new department\'s training will be added to their to-do list.' : '';
+      });
+      $('#pSave', card).addEventListener('click', () => {
+        const name = $('#pName', card).value.trim(); if (!name) return $('#pName', card).focus();
+        const email = $('#pEmail', card).value.trim().toLowerCase();
+        if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast('Add a valid work email'); return $('#pEmail', card).focus(); }
+        if (S.state.users.some((x) => x.email === email && x.id !== u.id)) { toast('Someone already uses that email'); return $('#pEmail', card).focus(); }
+        const saved = S.savePerson(isNew ? null : u.id, { name, email, title: $('#pTitle', card).value.trim(), dept: dept.value, supervisor: $('#pLead', card).value || null,
+          role: $('#pRole', card).value, start: $('#pStart', card).value.trim() || S.state.today, sme: $('#pSme', card).checked ? dept.value : null });
+        closeModal();
+        toast(isNew ? `${firstName(saved)} added · ${S.todo(saved).length} items in their to-do list` : 'Saved');
+        location.hash = '#/manage/people'; rerender();
+      });
+      const act = $('#pActive', card);
+      if (act) act.addEventListener('click', () => {
+        u.active = !S.active(u); S.save(); closeModal();
+        toast(S.active(u) ? 'Reactivated · they can sign in again' : `${firstName(u)} deactivated · they can't sign in, records are kept`);
+        location.hash = '#/manage/people'; rerender();
+      });
+    });
+  }
+  function deptModal(d) {
+    const isNew = !d;
+    d = d || { name: '', lead: null };
+    openModal(`<h2 id="modalTitle">${isNew ? 'Add department' : esc(d.name)}</h2>
+      <div class="field"><label for="dName">Name</label><input type="text" id="dName" value="${esc(d.name)}"></div>
+      <div class="field"><label for="dLead">Department lead</label><select id="dLead"><option value="">None</option>${S.leads().map((x) => `<option value="${x.id}" ${d.lead === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+        <p class="small muted" style="margin-top:6px">Everyone in this department reports to this person unless you choose someone else for them.</p></div>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="dSave" type="button">${isNew ? 'Add department' : 'Save'}</button></div>`, (card) => {
+      $('#dSave', card).addEventListener('click', () => {
+        const name = $('#dName', card).value.trim(); if (!name) return $('#dName', card).focus();
+        S.saveDept(isNew ? null : d.id, { name, lead: $('#dLead', card).value || null }); closeModal(); toast('Saved'); rerender();
+      });
+    });
+  }
+  function importModal() {
+    const sample = 'Name, Email, Job title, Department, Team lead, Start date\nRiley Chen, rchen@crownring.com, Customer Experience Specialist, Noam Carver Team, , 2026-12-01';
+    openModal(`<h2 id="modalTitle">Import people</h2>
+      <p class="small muted">Paste rows from Excel, or choose a CSV file. Columns: <strong>Name, Email, Job title, Department, Team lead, Start date</strong>. Leave Team lead blank to use the department lead.</p>
+      <div class="field"><input type="file" id="iFile" accept=".csv,text/csv"></div>
+      <div class="field"><textarea id="iText" placeholder="${esc(sample)}"></textarea></div>
+      <div id="iPreview" class="small"></div>
+      <div class="row end"><button class="btn btn-ghost" data-close type="button">Cancel</button><button class="btn" id="iGo" type="button" disabled>Import</button></div>`, (card) => {
+      const ta = $('#iText', card), prev = $('#iPreview', card), go = $('#iGo', card);
+      let rows = [];
+      const byName = (list, n) => list.find((x) => x.name.toLowerCase() === String(n || '').trim().toLowerCase());
+      const parse = () => {
+        const lines = ta.value.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+        rows = lines.map((l) => l.split(l.includes('\t') ? '\t' : ',').map((c) => c.trim()))
+          .filter((c) => !/^name$/i.test(c[0]))
+          .map(([name, email, title, dept, lead, start]) => {
+            const d = byName(S.state.departments, dept), ld = lead ? byName(S.state.users, lead) : null;
+            const em = (email || '').toLowerCase();
+            const err = !name ? 'Missing name' : !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em) ? 'Invalid email' : S.state.users.some((x) => x.email === em) ? 'Already on the list' : !d ? 'Unknown department' : lead && !ld ? 'Unknown team lead' : '';
+            return { name, email: em, title: title || '', dept: d && d.id, supervisor: ld ? ld.id : null, start: start || S.state.today, err };
+          });
+        const ok = rows.filter((r) => !r.err);
+        prev.innerHTML = rows.length ? `<div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Department</th><th></th></tr></thead><tbody>${rows.map((r) => `<tr><td>${esc(r.name)}</td><td>${esc(r.email)}</td><td>${r.dept ? esc(S.dept(r.dept)) : '—'}</td><td>${r.err ? `<span class="nh">${esc(r.err)}</span>` : '<span class="tag tag-ok">Ready</span>'}</td></tr>`).join('')}</tbody></table></div><p class="muted">${ok.length} of ${rows.length} ready to import.</p>` : '';
+        go.disabled = !ok.length; go.textContent = ok.length ? `Import ${ok.length}` : 'Import';
+      };
+      ta.addEventListener('input', parse);
+      $('#iFile', card).addEventListener('change', (e) => { const f = e.target.files[0]; if (!f) return; f.text().then((t) => { ta.value = t; parse(); }); });
+      go.addEventListener('click', () => {
+        const ok = rows.filter((r) => !r.err);
+        ok.forEach((r) => S.savePerson(null, { name: r.name, email: r.email, title: r.title, dept: r.dept, supervisor: r.supervisor, role: 'employee', start: r.start }));
+        closeModal(); toast(`${ok.length} ${ok.length === 1 ? 'person' : 'people'} added · training lists created`); rerender();
+      });
+    });
+  }
+  function bindPeople(openId) {
+    $('#importPeople').addEventListener('click', importModal);
+    bindNewDoc();
+    const inp = $('#pplSearch');
+    inp.addEventListener('keyup', (e) => { if (e.key === 'Enter') { pplQuery = inp.value; rerender(); } });
+    inp.addEventListener('change', () => { pplQuery = inp.value; rerender(); });
+    $$('.toolbar .chip').forEach((c) => c.addEventListener('click', () => { if (c.dataset.d === 'inactive') { pplInactive = !pplInactive; } else { pplInactive = false; pplDept = c.dataset.d; } rerender(); }));
+    $$('#pplTable tr.click').forEach((tr) => tr.addEventListener('click', () => personModal(S.user(tr.dataset.id))));
+    $$('.dept-card[data-id]').forEach((b) => b.addEventListener('click', () => deptModal(S.deptObj(b.dataset.id))));
+    $('#addDept').addEventListener('click', () => deptModal(null));
+    $('#addPerson').addEventListener('click', () => personModal(null));
+    if (openId && S.user(openId)) personModal(S.user(openId));
+  }
+
   /* ---------- Ask log: every question across the company ---------- */
   let logFilter = 'all', logQuery = '';
   function viewAskLog() {
@@ -2232,6 +2427,7 @@ h1 { font-weight: 500; letter-spacing: .01em; }
       else if (b === 'requests') { html = viewRequests(); bind = bindRequests; }
       else if (b === 'roadmap') { html = viewRoadmap(); bind = bindRoadmap; }
       else if (b === 'ask') { html = viewAskLog(); bind = bindAskLog; }
+      else if (b === 'people') { html = viewPeople(); bind = () => bindPeople(c); }
       else { html = viewRegister(); bind = bindRegister; }
     } else html = notFound();
 
